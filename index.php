@@ -251,12 +251,24 @@ if (isset($_GET['poll']) && isset($_SESSION['device_code'])) {
             transition: all 0.3s ease;
             margin-top: 1.5rem;
             box-shadow: 0 4px 15px rgba(94, 100, 255, 0.2);
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: auto;
         }
 
         .link:hover {
             background: #4a51ff;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(94, 100, 255, 0.3);
+        }
+
+        .link:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(94, 100, 255, 0.3);
         }
 
         .link i {
@@ -383,12 +395,10 @@ if (isset($_GET['poll']) && isset($_SESSION['device_code'])) {
                 </button>
             </div>
             <p class="instructions">at Microsoft's device login page</p>
-            <a href="<?php echo htmlspecialchars($_SESSION['verification_uri']); ?>" 
-               target="_blank" 
-               class="link">
+            <button onclick="openMicrosoftLogin()" class="link">
                 <i class="fas fa-external-link-alt"></i>
                 Open Microsoft Login
-            </a>
+            </button>
             <div class="status-message">
                 <i class="fas fa-sync-alt"></i>
                 Waiting for authentication...
@@ -425,6 +435,32 @@ if (isset($_GET['poll']) && isset($_SESSION['device_code'])) {
             }
             
             pollForToken();
+
+            function openMicrosoftLogin() {
+                const url = '<?php echo htmlspecialchars($_SESSION['verification_uri']); ?>';
+                const width = 600;
+                const height = 600;
+                const left = (window.innerWidth - width) / 2;
+                const top = (window.innerHeight - height) / 2;
+                
+                const popup = window.open(
+                    url,
+                    'Microsoft Login',
+                    `width=${width},
+                     height=${height},
+                     left=${left},
+                     top=${top},
+                     toolbar=no,
+                     menubar=no,
+                     scrollbars=yes,
+                     resizable=no,
+                     location=no,
+                     status=no`
+                );
+
+                // Focus on the popup
+                if (popup) popup.focus();
+            }
             </script>
         <?php endif; ?>
     </div>
