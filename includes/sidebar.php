@@ -21,7 +21,7 @@
             <i class="fas fa-paper-plane"></i>
             <span>Sent</span>
         </a>
-        <a href="drafts.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'draft.php' ? 'active' : ''; ?>">
+        <a href="draft.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'draft.php' ? 'active' : ''; ?>">
             <i class="fas fa-file-alt"></i>
             <span>Drafts</span>
         </a>

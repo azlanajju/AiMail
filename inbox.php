@@ -503,37 +503,100 @@ error_log('Emails data: ' . print_r($emails, true));
 
     function renderEmail(email) {
         const modal = document.getElementById('email-modal');
-        if (!modal) return;
+        if (!modal) {
+            console.error('Modal not found for rendering');
+            return;
+        }
 
-        const subjectLine = modal.querySelector('.email-subject-line');
-        const senderName = modal.querySelector('.sender-name');
-        const senderEmail = modal.querySelector('.sender-email');
-        const emailDate = modal.querySelector('.email-date');
-        const contentBody = modal.querySelector('.email-content-body');
-        const senderAvatar = modal.querySelector('.sender-avatar');
+        console.log('Rendering email:', email); // Debug log
 
-        if (subjectLine) subjectLine.textContent = email.subject || 'No Subject';
-        if (senderName) senderName.textContent = email.from?.emailAddress?.name || 'Unknown Sender';
-        if (senderEmail) senderEmail.textContent = email.from?.emailAddress?.address || '';
-        if (emailDate) emailDate.textContent = new Date(email.receivedDateTime).toLocaleString();
-        if (contentBody) contentBody.innerHTML = email.body?.content || '';
+        const modalBody = modal.querySelector('.modal-body');
         
-        if (senderAvatar) {
-            const name = email.from?.emailAddress?.name || 'U';
-            const initials = name.split(' ').map(n => n[0]).join('');
-            senderAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=5e64ff&color=fff`;
-        }
+        // Create a safe version of the HTML content
+        const createSafeHtml = (htmlContent) => {
+            // Create a new div to hold the content
+            const div = document.createElement('div');
+            // Set the HTML content
+            div.innerHTML = htmlContent;
+            
+            // Find all images and set their src attributes to be loaded securely
+            div.querySelectorAll('img').forEach(img => {
+                // Preserve original source as data attribute
+                img.setAttribute('data-original-src', img.src);
+                // Set max dimensions for images
+                img.style.maxWidth = '100%';
+                img.style.height = 'auto';
+            });
+            
+            return div.innerHTML;
+        };
 
-        // Handle attachments if present
-        const attachmentsDiv = modal.querySelector('.email-attachments');
-        if (attachmentsDiv && email.hasAttachments && email.attachments) {
-            attachmentsDiv.innerHTML = email.attachments.map(attachment => `
-                <div class="attachment">
-                    <i class="fas fa-paperclip"></i>
-                    <span>${attachment.name}</span>
+        modalBody.innerHTML = `
+            <div class="email-details">
+                <div class="email-subject-line">${email.subject || 'No Subject'}</div>
+                <div class="email-info">
+                    <div class="sender-info">
+                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(email.from?.emailAddress?.name || 'U')}&background=5e64ff&color=fff" 
+                             alt="" 
+                             class="sender-avatar">
+                        <div class="sender-details">
+                            <div class="sender-name">${email.from?.emailAddress?.name || 'Unknown Sender'}</div>
+                            <div class="sender-email">${email.from?.emailAddress?.address || ''}</div>
+                        </div>
+                    </div>
+                    <div class="email-date">${new Date(email.receivedDateTime).toLocaleString()}</div>
                 </div>
-            `).join('');
-        }
+                <div class="email-content-body">
+                    ${createSafeHtml(email.body?.content || '')}
+                </div>
+                ${email.hasAttachments ? `
+                    <div class="email-attachments">
+                        <h3 class="attachments-title">
+                            <i class="fas fa-paperclip"></i> 
+                            Attachments (${email.attachments?.length || 0})
+                        </h3>
+                        <div class="attachments-list">
+                            ${email.attachments?.map(attachment => `
+                                <div class="attachment-item">
+                                    <div class="attachment-icon">
+                                        <i class="fas ${getAttachmentIcon(attachment.contentType)}"></i>
+                                    </div>
+                                    <div class="attachment-details">
+                                        <div class="attachment-name">${attachment.name}</div>
+                                        <div class="attachment-size">${formatFileSize(attachment.size)}</div>
+                                    </div>
+                                    <a href="endpoints/download_attachment.php?messageId=${email.id}&attachmentId=${attachment.id}" 
+                                       class="attachment-download" 
+                                       download="${attachment.name}">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </div>
+                            `).join('') || ''}
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    // Helper function to get appropriate icon based on file type
+    function getAttachmentIcon(contentType) {
+        if (contentType.includes('image')) return 'fa-image';
+        if (contentType.includes('pdf')) return 'fa-file-pdf';
+        if (contentType.includes('word')) return 'fa-file-word';
+        if (contentType.includes('excel') || contentType.includes('spreadsheet')) return 'fa-file-excel';
+        if (contentType.includes('powerpoint') || contentType.includes('presentation')) return 'fa-file-powerpoint';
+        if (contentType.includes('zip') || contentType.includes('compressed')) return 'fa-file-archive';
+        return 'fa-file';
+    }
+
+    // Helper function to format file size
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
     </script>
 
@@ -663,8 +726,79 @@ error_log('Emails data: ' . print_r($emails, true));
     }
 
     .email-content-body {
+        padding: 20px 0;
         line-height: 1.6;
+    }
+
+    .email-content-body img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .attachments-title {
+        font-size: 16px;
         color: #333;
+        margin: 20px 0 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eef0ff;
+    }
+
+    .attachments-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 10px;
+    }
+
+    .attachment-item {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        background: #f8f9ff;
+        border-radius: 8px;
+        border: 1px solid #eef0ff;
+        transition: all 0.2s ease;
+    }
+
+    .attachment-item:hover {
+        background: #f5f7ff;
+        border-color: #5e64ff;
+    }
+
+    .attachment-icon {
+        font-size: 24px;
+        color: #5e64ff;
+        margin-right: 12px;
+    }
+
+    .attachment-details {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .attachment-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: #333;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .attachment-size {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .attachment-download {
+        color: #5e64ff;
+        padding: 8px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .attachment-download:hover {
+        background: #eef0ff;
     }
 
     .email-attachments {
