@@ -1,21 +1,31 @@
 <?php
 session_start();
-$activePage="home";
+$activePage = "home";
 if (!isset($_SESSION['access_token'])) {
-    header('Location: index.php');
+    header('Location: ../index.php');
     exit;
 }
 
 require_once '../vendor/autoload.php';
 $parsedown = new Parsedown();
 
-// Add summary timestamp check
+// Add summary and calendar timestamp checks
 $summaryExpiration = 5 * 60; // 5 minutes in seconds
-$shouldRefreshSummary = true;
+$calendarExpiration = 5 * 60; // 5 minutes in seconds
 
+$shouldRefreshSummary = true;
+$shouldRefreshCalendar = true;
+
+// Check if summary needs refresh
 if (isset($_SESSION['summary']) && isset($_SESSION['summary_timestamp'])) {
     $timeSinceLastSummary = time() - $_SESSION['summary_timestamp'];
     $shouldRefreshSummary = $timeSinceLastSummary > $summaryExpiration;
+}
+
+// Check if calendar needs refresh
+if (isset($_SESSION['calendar_events']) && isset($_SESSION['calendar_timestamp'])) {
+    $timeSinceLastCalendar = time() - $_SESSION['calendar_timestamp'];
+    $shouldRefreshCalendar = $timeSinceLastCalendar > $calendarExpiration;
 }
 ?>
 
@@ -28,7 +38,7 @@ if (isset($_SESSION['summary']) && isset($_SESSION['summary_timestamp'])) {
     <link rel="stylesheet" href="./home.css">
 </head>
 <body>
-    <?php $path="../"; include '../includes/sidebar.php'; ?>
+    <?php $activePage="home"; $path="../"; include '../includes/sidebar.php'; ?>
     <?php $path="../"; include '../includes/topbar.php'; ?>
 
     <div class="container">
@@ -47,7 +57,7 @@ if (isset($_SESSION['summary']) && isset($_SESSION['summary_timestamp'])) {
                             Last updated: <?php echo date('g:i A', $_SESSION['summary_timestamp']); ?>
                         </div>
                         <?php endif; ?>
-                        <div class="loader-container">
+                        <div class="loader-container" style="display: none;">
                             <div class="loader"></div>
                             <div class="loader-text">Analyzing your emails...</div>
                         </div>
@@ -59,8 +69,6 @@ if (isset($_SESSION['summary']) && isset($_SESSION['summary_timestamp'])) {
                             }
                             ?>
                         </div>
-
-
                     </div>
                 </div>
 
@@ -70,13 +78,28 @@ if (isset($_SESSION['summary']) && isset($_SESSION['summary_timestamp'])) {
                             <h2><i class="fas fa-calendar-day"></i> Today's Schedule</h2>
                         </div>
 
-                        <div class="events-loader-container">
+                        <div class="events-loader-container" style="display: none;">
                             <div class="loader"></div>
                             <div class="loader-text">Loading today's events...</div>
                         </div>
 
                         <div id="today-events" class="events-container">
-                            <!-- Events will be loaded here -->
+                            <?php 
+                            if (isset($_SESSION['calendar_events']) && !$shouldRefreshCalendar) {
+                                $events = $_SESSION['calendar_events'];
+                                if (empty($events)) {
+                                    echo '<div class="no-events">';
+                                    echo '<i class="fas fa-calendar-check"></i>';
+                                    echo '<p>No events scheduled for today</p>';
+                                    echo '</div>';
+                                } else {
+                                    foreach ($events as $event) {
+                                        // Your existing event rendering code here
+                                        // ...
+                                    }
+                                }
+                            }
+                            ?>
                         </div>
                     </div>
                 </div>
@@ -90,7 +113,11 @@ if (isset($_SESSION['summary']) && isset($_SESSION['summary_timestamp'])) {
         document.querySelector('.loader-container').style.display = 'block';
         fetchSummary();
         <?php endif; ?>
+        
+        <?php if ($shouldRefreshCalendar): ?>
+        document.querySelector('.events-loader-container').style.display = 'block';
         fetchTodayEvents();
+        <?php endif; ?>
     });
 
     function fetchSummary() {
@@ -98,18 +125,11 @@ if (isset($_SESSION['summary']) && isset($_SESSION['summary_timestamp'])) {
         if (button) button.disabled = true;
 
         fetch('../endpoints/summarize_emails.php')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
                 if (data && data.summary) {
-                    // Use marked.js to parse markdown
                     document.getElementById('summary-content').innerHTML = marked.parse(data.summary);
                     
-                    // Update last updated time
                     const timeString = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
                     const lastUpdated = document.querySelector('.last-updated');
                     if (lastUpdated) {
@@ -118,7 +138,7 @@ if (isset($_SESSION['summary']) && isset($_SESSION['summary_timestamp'])) {
                         const newLastUpdated = document.createElement('div');
                         newLastUpdated.className = 'last-updated';
                         newLastUpdated.textContent = `Last updated: ${timeString}`;
-                        document.querySelector('.summary-section').appendChild(newLastUpdated);
+                        document.querySelector('.summary-section').insertBefore(newLastUpdated, document.querySelector('.loader-container'));
                     }
                 } else {
                     throw new Error(data.error || 'No summary available');
@@ -136,12 +156,6 @@ if (isset($_SESSION['summary']) && isset($_SESSION['summary_timestamp'])) {
                 document.querySelector('.loader-container').style.display = 'none';
                 if (button) button.disabled = false;
             });
-    }
-
-    function refreshSummary() {
-        document.querySelector('.loader-container').style.display = 'block';
-        document.getElementById('summary-content').innerHTML = '';
-        fetchSummary();
     }
 
     function fetchTodayEvents() {
@@ -231,7 +245,5 @@ if (isset($_SESSION['summary']) && isset($_SESSION['summary_timestamp'])) {
 
     <!-- Add marked.js for markdown parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-
 </body>
 </html>

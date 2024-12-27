@@ -95,8 +95,12 @@ try {
 
     $summary = generateSummary($emails);
     
+    // Store summary in session
+    $_SESSION['summary'] = nl2br(htmlspecialchars($summary));
+    $_SESSION['summary_timestamp'] = time();
+    
     echo json_encode([
-        'summary' => nl2br(htmlspecialchars($summary))
+        'summary' => $_SESSION['summary']
     ]);
 
 } catch (Exception $e) {
