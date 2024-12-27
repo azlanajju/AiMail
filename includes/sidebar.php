@@ -1,47 +1,49 @@
+
+
 <div class="sidebar">
     <div class="logo">
-        <img src="images/smart_compse_fullLogo.png" alt="Smart Compose Logo">
+        <img src="<?php echo $path?>images/smart_compse_fullLogo.png" alt="Smart Compose Logo">
     </div>
     
     <nav class="nav-menu">
-        <a href="home.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'home.php' ? 'active' : ''; ?>">
+        <a href="<?php echo $path?>home" class="nav-item <?php echo $activePage == 'home' ? 'active' : ''; ?>">
             <i class="fas fa-home"></i>
             <span>Home</span>
         </a>
-        <a href="inbox.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'inbox.php' ? 'active' : ''; ?>">
+        <a href="<?php echo $path?>inbox" class="nav-item <?php echo $activePage == 'inbox' ? 'active' : ''; ?>">
             <i class="fas fa-envelope"></i>
             <span>Inbox</span>
         </a>
-        <a href="calendar.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'calendar.php' ? 'active' : ''; ?>">
+        <a href="<?php echo $path?>calendar" class="nav-item <?php echo $activePage == 'calendar' ? 'active' : ''; ?>">
             <i class="fas fa-calendar-day"></i>
             <span>Calendar</span>
         </a>
 
-        <a href="sent.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'sent.php' ? 'active' : ''; ?>">
+        <a href="<?php echo $path?>sent" class="nav-item <?php echo $activePage == 'sent' ? 'active' : ''; ?>">
             <i class="fas fa-paper-plane"></i>
             <span>Sent</span>
         </a>
-        <a href="draft.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'draft.php' ? 'active' : ''; ?>">
+        <a href="<?php echo $path?>draft" class="nav-item <?php echo $activePage == 'draft' ? 'active' : ''; ?>">
             <i class="fas fa-file-alt"></i>
             <span>Drafts</span>
         </a>
-        <a href="archive.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'archive.php' ? 'active' : ''; ?>">
+        <a href="<?php echo $path?>archive" class="nav-item <?php echo $activePage == 'archive' ? 'active' : ''; ?>">
             <i class="fas fa-archive"></i>
             <span>Archive</span>
         </a>
-        <a href="spam.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'spam.php' ? 'active' : ''; ?>">
+        <a href="<?php echo $path?>spam" class="nav-item <?php echo $activePage == 'spam' ? 'active' : ''; ?>">
             <i class="fas fa-exclamation-circle"></i>
             <span>Spam</span>
         </a>
-        <a href="starred.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'starred.php' ? 'active' : ''; ?>">
+        <a href="<?php echo $path?>starred" class="nav-item <?php echo $activePage == 'starred' ? 'active' : ''; ?>">
             <i class="fas fa-star"></i>
             <span>Starred</span>
         </a>
-        <a href="important.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'important.php' ? 'active' : ''; ?>">
+        <!-- <a href="important" class="nav-item <?php echo $activePage == 'important' ? 'active' : ''; ?>">
             <i class="fas fa-bookmark"></i>
             <span>Important</span>
-        </a>
-        <a href="trash.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'trash.php' ? 'active' : ''; ?>">
+        </a> -->
+        <a href="<?php echo $path?>trash" class="nav-item <?php echo $activePage == 'trash' ? 'active' : ''; ?>">
             <i class="fas fa-trash"></i>
             <span>Trash</span>
         </a>
@@ -52,7 +54,7 @@
             <i class="fas fa-user-circle"></i>
             <span><?php echo $_SESSION['user_name'] ?? 'User'; ?></span>
         </div> -->
-        <a href="logout.php" class="logout-btn">
+        <a href="<?php echo $path?>logout.php" class="logout-btn">
             <i class="fas fa-sign-out-alt"></i>
             <span>Logout</span>
         </a>

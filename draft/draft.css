@@ -1,0 +1,148 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+    min-height: 100vh;
+}
+
+.container {
+    margin-left: 250px;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.page-title {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.draft-list {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.draft-item {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.draft-item:hover {
+    background-color: #f8f9fa;
+}
+
+.draft-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.draft-to {
+    font-weight: 600;
+    color: #333;
+    flex: 1;
+}
+
+.draft-date {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.draft-subject {
+    font-weight: 500;
+    color: #1a73e8;
+    margin-bottom: 8px;
+}
+
+.draft-preview {
+    color: #666;
+    font-size: 0.9em;
+    line-height: 1.5;
+}
+
+.draft-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.edit-btn {
+    color: #1a73e8;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.edit-btn:hover {
+    background: #f1f7fe;
+}
+
+.delete-btn {
+    color: #dc3545;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.delete-btn:hover {
+    background: #fee;
+}
+
+.no-drafts {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.error-message {
+    background: #fee;
+    color: #c00;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.search-bar input {
+    padding: 12px 20px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    width: 300px;
+    font-size: 14px;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: #1a73e8;
+}

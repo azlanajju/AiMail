@@ -66,6 +66,7 @@ error_log('Emails data: ' . print_r($emails, true));
 <head>
     <title>AIINBOX - Inbox</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="./inbox.css">
     <style>
         body {
             margin: 0;
@@ -297,11 +298,88 @@ error_log('Emails data: ' . print_r($emails, true));
                 display: none;
             }
         }
+
+        .email-content-body {
+            padding: 20px 0;
+            line-height: 1.6;
+        }
+
+        .email-content-body img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .attachments-title {
+            font-size: 16px;
+            color: #333;
+            margin: 20px 0 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eef0ff;
+        }
+
+        .attachments-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9ff;
+            border-radius: 8px;
+            border: 1px solid #eef0ff;
+            transition: all 0.2s ease;
+        }
+
+        .attachment-item:hover {
+            background: #f5f7ff;
+            border-color: #5e64ff;
+        }
+
+        .attachment-icon {
+            font-size: 24px;
+            color: #5e64ff;
+            margin-right: 12px;
+        }
+
+        .attachment-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .attachment-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .attachment-size {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .attachment-download {
+            color: #5e64ff;
+            padding: 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .attachment-download:hover {
+            background: #eef0ff;
+        }
     </style>
 </head>
 <body>
-    <?php include 'includes/sidebar.php'; ?>
-    <?php include 'includes/topbar.php'; ?>
+    <?php $activePage="inbox";
+ $path="../"; include '../includes/sidebar.php'; ?>
+    <?php $path="../"; include '../includes/topbar.php'; ?>
     
     <div class="container">
         <div class="main-content">
@@ -386,18 +464,7 @@ error_log('Emails data: ' . print_r($emails, true));
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-actions">
-                    <button class="modal-action-btn" title="Reply">
-                        <i class="fas fa-reply"></i>
-                    </button>
-                    <button class="modal-action-btn" title="Forward">
-                        <i class="fas fa-forward"></i>
-                    </button>
-                    <button class="modal-action-btn" title="Archive">
-                        <i class="fas fa-archive"></i>
-                    </button>
-                    <button class="modal-action-btn delete-btn" title="Delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
+
                 </div>
                 <button class="close-modal">
                     <i class="fas fa-times"></i>
@@ -483,7 +550,7 @@ error_log('Emails data: ' . print_r($emails, true));
         modal.style.display = "block";
 
         // Fetch email content
-        fetch(`endpoints/get_email.php?id=${encodeURIComponent(emailId)}`)
+        fetch(`../endpoints/get_email.php?id=${encodeURIComponent(emailId)}`)
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
@@ -531,7 +598,28 @@ error_log('Emails data: ' . print_r($emails, true));
             return div.innerHTML;
         };
 
-        modalBody.innerHTML = `
+        // Add modal header with actions
+        const modalHeader = `
+            <div class="modal-header">
+                <div class="modal-actions">
+                    <button class="modal-action-btn" onclick="redirectToReply('${email.id}')" title="Reply">
+                        <i class="fas fa-reply"></i> Reply
+                    </button>
+                    <button class="modal-action-btn" title="Forward">
+                        <i class="fas fa-forward"></i>
+                    </button>
+                    <button class="modal-action-btn" title="Archive">
+                        <i class="fas fa-archive"></i>
+                    </button>
+                    <button class="modal-action-btn delete-btn" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+
+            </div>
+        `;
+
+        modalBody.innerHTML = modalHeader + `
             <div class="email-details">
                 <div class="email-subject-line">${email.subject || 'No Subject'}</div>
                 <div class="email-info">
@@ -565,7 +653,7 @@ error_log('Emails data: ' . print_r($emails, true));
                                         <div class="attachment-name">${attachment.name}</div>
                                         <div class="attachment-size">${formatFileSize(attachment.size)}</div>
                                     </div>
-                                    <a href="endpoints/download_attachment.php?messageId=${email.id}&attachmentId=${attachment.id}" 
+                                    <a href="../endpoints/download_attachment.php?messageId=${email.id}&attachmentId=${attachment.id}" 
                                        class="attachment-download" 
                                        download="${attachment.name}">
                                         <i class="fas fa-download"></i>
@@ -598,246 +686,17 @@ error_log('Emails data: ' . print_r($emails, true));
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
+
+    // Add this function to handle the reply redirect
+    function redirectToReply(emailId) {
+        if (!emailId) {
+            console.error('No email ID provided for reply');
+            return;
+        }
+        window.location.href = `reply.php?id=${encodeURIComponent(emailId)}`;
+    }
     </script>
 
-    <style>
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-    }
 
-    .modal-content {
-        position: relative;
-        background: white;
-        margin: 50px auto;
-        width: 90%;
-        max-width: 800px;
-        height: calc(100vh - 100px);
-        border-radius: 12px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        display: flex;
-        flex-direction: column;
-    }
-
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 15px 20px;
-        border-bottom: 1px solid #eef0ff;
-    }
-
-    .modal-actions {
-        display: flex;
-        gap: 10px;
-    }
-
-    .modal-action-btn {
-        background: none;
-        border: none;
-        padding: 8px;
-        border-radius: 6px;
-        color: #666;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .modal-action-btn:hover {
-        background: #f5f7ff;
-        color: #5e64ff;
-    }
-
-    .modal-action-btn.delete-btn:hover {
-        background: #fff5f5;
-        color: #ff4757;
-    }
-
-    .close-modal {
-        background: none;
-        border: none;
-        padding: 8px;
-        cursor: pointer;
-        color: #666;
-        transition: all 0.2s ease;
-    }
-
-    .close-modal:hover {
-        color: #5e64ff;
-    }
-
-    .modal-body {
-        padding: 20px;
-        overflow-y: auto;
-        flex: 1;
-    }
-
-    .email-details {
-        max-width: 700px;
-        margin: 0 auto;
-    }
-
-    .email-subject-line {
-        font-size: 24px;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 20px;
-    }
-
-    .email-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid #eef0ff;
-    }
-
-    .sender-info {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .sender-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-    }
-
-    .sender-name {
-        font-weight: 600;
-        color: #333;
-    }
-
-    .sender-email {
-        color: #666;
-        font-size: 0.9em;
-    }
-
-    .email-date {
-        color: #666;
-        font-size: 0.9em;
-    }
-
-    .email-content-body {
-        padding: 20px 0;
-        line-height: 1.6;
-    }
-
-    .email-content-body img {
-        max-width: 100%;
-        height: auto;
-    }
-
-    .attachments-title {
-        font-size: 16px;
-        color: #333;
-        margin: 20px 0 15px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #eef0ff;
-    }
-
-    .attachments-list {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 15px;
-        margin-top: 10px;
-    }
-
-    .attachment-item {
-        display: flex;
-        align-items: center;
-        padding: 10px;
-        background: #f8f9ff;
-        border-radius: 8px;
-        border: 1px solid #eef0ff;
-        transition: all 0.2s ease;
-    }
-
-    .attachment-item:hover {
-        background: #f5f7ff;
-        border-color: #5e64ff;
-    }
-
-    .attachment-icon {
-        font-size: 24px;
-        color: #5e64ff;
-        margin-right: 12px;
-    }
-
-    .attachment-details {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .attachment-name {
-        font-size: 14px;
-        font-weight: 500;
-        color: #333;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .attachment-size {
-        font-size: 12px;
-        color: #666;
-    }
-
-    .attachment-download {
-        color: #5e64ff;
-        padding: 8px;
-        border-radius: 4px;
-        transition: all 0.2s ease;
-    }
-
-    .attachment-download:hover {
-        background: #eef0ff;
-    }
-
-    .email-attachments {
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 1px solid #eef0ff;
-    }
-
-    .modal-loading {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-        gap: 15px;
-        color: #666;
-    }
-
-    .modal-error {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-        gap: 15px;
-        color: #ff4757;
-    }
-
-    @media (max-width: 768px) {
-        .modal-content {
-            width: 95%;
-            margin: 20px auto;
-            height: calc(100vh - 40px);
-        }
-
-        .email-subject-line {
-            font-size: 20px;
-        }
-    }
-    </style>
 </body>
 </html> 

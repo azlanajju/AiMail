@@ -12,9 +12,11 @@ if (!isset($_SESSION['access_token'])) {
 <head>
     <title>AIINBOX - Calendar</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="./calendar.css">
 </head>
 <body>
-    <?php include 'includes/sidebar.php'; ?>
+    <?php $activePage="calendar"; $path="../"; include '../includes/sidebar.php'; ?>
+    <?php $path="../"; include '../includes/topbar.php'; ?>
 
     <div class="container">
         <div class="main-content">
@@ -56,7 +58,7 @@ if (!isset($_SESSION['access_token'])) {
     function fetchEvents() {
         document.querySelector('.loader-container').style.display = 'block';
         
-        fetch('endpoints/get_calendar_events.php')
+        fetch('../endpoints/get_calendar_events.php')
             .then(response => response.json())
             .then(data => {
                 if (data.success && data.events) {
@@ -163,150 +165,5 @@ if (!isset($_SESSION['access_token'])) {
     }
     </script>
 
-    <style>
-        body {
-            background-color: #f5f7ff;
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        .container {
-            margin-left: 250px;
-            padding: 20px;
-        }
-
-        .main-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-
-        .calendar-header h2 {
-            color: #5e64ff;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .view-controls {
-            display: flex;
-            gap: 10px;
-        }
-
-        .view-btn {
-            background: white;
-            border: 1px solid #5e64ff;
-            color: #5e64ff;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-        }
-
-        .view-btn.active {
-            background: #5e64ff;
-            color: white;
-        }
-
-        .date-group {
-            background: white;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            overflow: hidden;
-            box-shadow: 0 2px 12px rgba(94, 100, 255, 0.1);
-        }
-
-        .date-header {
-            background: #5e64ff;
-            color: white;
-            padding: 15px 20px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .events-list {
-            padding: 20px;
-        }
-
-        .event-card {
-            display: flex;
-            gap: 20px;
-            padding: 15px;
-            border-bottom: 1px solid #eef0ff;
-        }
-
-        .event-card:last-child {
-            border-bottom: none;
-        }
-
-        .event-time {
-            min-width: 140px;
-            color: #5e64ff;
-            font-weight: 500;
-        }
-
-        .event-details h3 {
-            margin: 0 0 10px 0;
-            color: #333;
-        }
-
-        .event-location, .online-meeting {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .event-preview {
-            color: #666;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-
-        .loader-container {
-            display: none;
-            text-align: center;
-            padding: 40px;
-        }
-
-        .loader {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            border: 3px solid #eef0ff;
-            border-radius: 50%;
-            border-top: 3px solid #5e64ff;
-            animation: spin 1s linear infinite;
-        }
-
-        .no-events {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(94, 100, 255, 0.1);
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
 </body>
 </html> 
