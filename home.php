@@ -6,106 +6,16 @@ if (!isset($_SESSION['access_token'])) {
     exit;
 }
 
-require 'vendor/autoload.php'; // Make sure you have this for Parsedown
+require_once 'vendor/autoload.php';
+$parsedown = new Parsedown();
 
-class EmailViewer {
-    private $accessToken;
+// Add summary timestamp check
+$summaryExpiration = 5 * 60; // 5 minutes in seconds
+$shouldRefreshSummary = true;
 
-    public function __construct($accessToken) {
-        $this->accessToken = $accessToken;
-    }
-
-    public function fetchAllEmails() {
-        $ch = curl_init('https://graph.microsoft.com/v1.0/me/messages?$top=50');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Authorization: Bearer ' . $this->accessToken,
-            'Content-Type: application/json'
-        ]);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Only for development
-        
-        $response = curl_exec($ch);
-        
-        // Log the raw response
-        error_log("Raw API Response: " . $response);
-        
-        if(curl_errno($ch)) {
-            error_log("Curl Error: " . curl_error($ch));
-            return ['error' => curl_error($ch)];
-        }
-        
-        curl_close($ch);
-        $data = json_decode($response, true);
-        
-        // Log the decoded data
-        error_log("Decoded Data: " . print_r($data, true));
-        
-        $emails = [];
-        if (isset($data['value'])) {
-            foreach ($data['value'] as $email) {
-                // Parse Markdown body
-                $parsedown = new Parsedown();
-                $parsedBody = $parsedown->text($email['bodyPreview']); // Parse the bodyPreview as Markdown
-                
-                $emails[] = [
-                    'subject' => $email['subject'],
-                    'body' => $parsedBody  // Store the parsed Markdown as HTML
-                ];
-            }
-        }
-        
-        // Log the formatted emails
-        error_log("Formatted Emails: " . print_r($emails, true));
-        
-        return $emails;
-    }
-
-    public function getSummary($emails) {
-        if (empty($emails)) {
-            error_log("No emails to summarize");
-            return ['success' => false, 'error' => 'No emails to summarize'];
-        }
-
-        $data = ['emails' => $emails];
-        
-        // Log the data being sent to summarize_all.php
-        error_log("Sending to summarize_all.php: " . json_encode($data));
-
-        $ch = curl_init('http://localhost/smartCompose/endpoints/summarize_all.php');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/json'
-        ]);
-        
-        $response = curl_exec($ch);
-        
-        // Log the summary response
-        error_log("Summary Response: " . $response);
-        
-        curl_close($ch);
-        return json_decode($response, true);
-    }
-}
-
-// Log the access token (first 10 characters only for security)
-error_log("Access Token (first 10 chars): " . substr($_SESSION['access_token'], 0, 10));
-
-$emailViewer = new EmailViewer($_SESSION['access_token']);
-$emails = $emailViewer->fetchAllEmails();
-
-// Log the final emails array
-error_log("Final Emails Array: " . print_r($emails, true));
-
-$summary = $emailViewer->getSummary($emails);
-
-// Log the final summary
-error_log("Final Summary: " . print_r($summary, true));
-
-// Add this debug section right before rendering
-if (!empty($summary)) {
-    error_log('Raw Summary Response: ' . print_r($summary, true));
+if (isset($_SESSION['summary']) && isset($_SESSION['summary_timestamp'])) {
+    $timeSinceLastSummary = time() - $_SESSION['summary_timestamp'];
+    $shouldRefreshSummary = $timeSinceLastSummary > $summaryExpiration;
 }
 ?>
 
@@ -114,6 +24,116 @@ if (!empty($summary)) {
 <head>
     <title>AIINBOX - Home</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+</head>
+<body>
+    <?php include 'includes/sidebar.php'; ?>
+
+    <div class="container">
+        <div class="main-content">
+            <div class="summary-section">
+                <div class="summary-header">
+                    <h2><i class="fas fa-envelope"></i> Email Summary</h2>
+                    <button id="refresh-btn" class="refresh-button" onclick="refreshSummary()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+
+                <div class="loader-container">
+                    <div class="loader"></div>
+                    <div class="loader-text">Analyzing your emails...</div>
+                </div>
+
+                <div id="summary-content" class="markdown-body">
+                    <?php 
+                    if (isset($_SESSION['summary']) && !$shouldRefreshSummary) {
+                        echo $_SESSION['summary'];
+                    }
+                    ?>
+                </div>
+
+                <?php if (isset($_SESSION['summary_timestamp']) && !$shouldRefreshSummary): ?>
+                <div class="last-updated">
+                    Last updated: <?php echo date('g:i A', $_SESSION['summary_timestamp']); ?>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        <?php if ($shouldRefreshSummary): ?>
+        document.querySelector('.loader-container').style.display = 'block';
+        fetchSummary();
+        <?php endif; ?>
+    });
+
+    function fetchSummary() {
+        const button = document.getElementById('refresh-btn');
+        if (button) button.disabled = true;
+
+        fetch('endpoints/summarize_emails.php')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.summary) {
+                    const markdownContent = convertToMarkdown(data.summary);
+                    document.getElementById('summary-content').innerHTML = markdownContent;
+                    
+                    // Update last updated time
+                    const timeString = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                    const lastUpdated = document.querySelector('.last-updated');
+                    if (lastUpdated) {
+                        lastUpdated.textContent = `Last updated: ${timeString}`;
+                    } else {
+                        const newLastUpdated = document.createElement('div');
+                        newLastUpdated.className = 'last-updated';
+                        newLastUpdated.textContent = `Last updated: ${timeString}`;
+                        document.querySelector('.summary-section').appendChild(newLastUpdated);
+                    }
+                } else {
+                    throw new Error(data.error || 'No summary available');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('summary-content').innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i> 
+                        ${error.message}
+                    </div>`;
+            })
+            .finally(() => {
+                document.querySelector('.loader-container').style.display = 'none';
+                if (button) button.disabled = false;
+            });
+    }
+
+    function refreshSummary() {
+        document.querySelector('.loader-container').style.display = 'block';
+        document.getElementById('summary-content').innerHTML = '';
+        fetchSummary();
+    }
+
+    function convertToMarkdown(text) {
+        return text
+            .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+            .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+            .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+            .replace(/^\* (.*$)/gm, '<li>$1</li>')
+            .replace(/^- (.*$)/gm, '<li>$1</li>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+            .replace(/\n/g, '<br>');
+    }
+    </script>
+
     <style>
         * {
             margin: 0;
@@ -218,70 +238,37 @@ if (!empty($summary)) {
         .action-btn:disabled {
             background: #ccc;
         }
+
+        .refresh-button {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .refresh-button:hover {
+            background: #1557b0;
+        }
+
+        .refresh-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .last-updated {
+            color: #666;
+            font-size: 12px;
+            text-align: right;
+            margin-top: 20px;
+            font-style: italic;
+        }
     </style>
-</head>
-<body>
-    <?php include 'includes/sidebar.php'; ?>
-    
-    <div class="container">
-        <div class="main-content">
-            <div class="header">
-                <div class="search-bar">
-                    <input type="text" placeholder="Search in mail">
-                </div>
-                <div class="user-profile">
-                    <i class="fas fa-cog"></i>
-                    <i class="fas fa-user-circle"></i>
-                </div>
-            </div>
-
-            <h1 class="greeting">Good <?php 
-                $hour = date('H');
-                if ($hour < 12) echo "Morning";
-                else if ($hour < 17) echo "Afternoon";
-                else echo "Evening";
-            ?></h1>
-
-            <?php if ($summary && $summary['success']): ?>
-            <div class="summary-section">
-                <?php
-                if (isset($summary['error'])) {
-                    echo '<div class="error-message">';
-                    echo '<i class="fas fa-exclamation-circle"></i> ';
-                    echo htmlspecialchars($summary['error']);
-                    echo '</div>';
-                } elseif (empty($summary)) {
-                    echo '<div class="no-summary">';
-                    echo '<i class="fas fa-inbox"></i> No summary available';
-                    echo '</div>';
-                } else {
-                    echo '<div class="summary-header">';
-                    echo '<h2><i class="fas fa-robot"></i> AI Email Summary</h2>';
-                    echo '<span class="email-count">' . count($emails) . ' emails analyzed</span>';
-                    echo '</div>';
-                    echo '<div class="markdown-content">';
-                    // Debug: Show raw markdown
-                    echo '<pre style="display:none">' . htmlspecialchars($summary['summary']) . '</pre>';
-                    // Convert markdown to HTML with error checking
-                    $parsedown = new Parsedown();
-                    $markdownContent = $summary['summary'] ?? 'No summary generated';
-                    $htmlContent = $parsedown->text($markdownContent);
-                    echo $htmlContent;
-                    echo '</div>';
-                }
-                ?>
-            </div>
-            <?php endif; ?>
-
-
-        </div>
-    </div>
-
-    <!-- Add console logging -->
-    <script>
-        console.log('Raw Summary:', <?php echo json_encode($summary); ?>);
-        console.log('Markdown Content:', <?php echo json_encode($markdownContent ?? null); ?>);
-        console.log('HTML Content:', <?php echo json_encode($htmlContent ?? null); ?>);
-    </script>
 </body>
 </html>

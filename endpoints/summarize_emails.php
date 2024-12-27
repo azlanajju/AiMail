@@ -25,14 +25,18 @@ function fetchEmails($accessToken) {
     ]);
 
     $response = curl_exec($ch);
+    
+    if(curl_errno($ch)) {
+        throw new Exception(curl_error($ch));
+    }
+    
     curl_close($ch);
-
     return json_decode($response, true);
 }
 
 function generateSummary($emails) {
-    $API_KEY = 'YOUR_GEMINI_API_KEY';
-    $GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
+    $apiKey = 'AIzaSyBhXfHEDoZw41AmFmFCUFnQEOOimQiS_s8'; // Your Gemini API key
+    $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
 
     // Prepare email data for summarization
     $emailContent = '';
@@ -41,8 +45,14 @@ function generateSummary($emails) {
         $emailContent .= "Preview: {$email['bodyPreview']}\n\n";
     }
 
-    $prompt = "Summarize these recent emails in a clear, concise way. Focus on key points and action items:\n\n" . $emailContent;
+    $prompt = "Summarize these recent emails in a clear, concise way. Format the response in markdown with:
+    - Use headers (##) for main sections
+    - Bullet points for key items
+    - Bold for important terms
+    - Include a brief overview at the top
 
+    Recent emails to summarize:\n\n" . $emailContent;
+    
     $payload = json_encode([
         'contents' => [[
             'parts' => [[
@@ -51,7 +61,7 @@ function generateSummary($emails) {
         ]]
     ]);
 
-    $ch = curl_init($GEMINI_ENDPOINT . '?key=' . urlencode($API_KEY));
+    $ch = curl_init($endpoint . '?key=' . urlencode($apiKey));
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST => true,
@@ -60,39 +70,42 @@ function generateSummary($emails) {
     ]);
 
     $response = curl_exec($ch);
-    $data = json_decode($response, true);
+    
+    if(curl_errno($ch)) {
+        throw new Exception(curl_error($ch));
+    }
+    
     curl_close($ch);
-
+    
+    $data = json_decode($response, true);
+    
     if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
         return $data['candidates'][0]['content']['parts'][0]['text'];
     }
-
-    return null;
+    
+    throw new Exception('Failed to generate summary from AI');
 }
 
 try {
-    // Fetch recent emails
     $emails = fetchEmails($_SESSION['access_token']);
     
     if (!isset($emails['value'])) {
         throw new Exception('Failed to fetch emails');
     }
 
-    // Generate summary
     $summary = generateSummary($emails);
     
-    if (!$summary) {
-        throw new Exception('Failed to generate summary');
-    }
-
-    // Return formatted summary
+    // Store summary in session
+    $_SESSION['summary'] = nl2br(htmlspecialchars($summary));
+    $_SESSION['summary_timestamp'] = time();
+    
     echo json_encode([
-        'success' => true,
-        'summary' => nl2br(htmlspecialchars($summary))
+        'summary' => $_SESSION['summary']
     ]);
 
 } catch (Exception $e) {
+    http_response_code(500);
     echo json_encode([
         'error' => $e->getMessage()
     ]);
-}
+} 
