@@ -8,14 +8,15 @@
             <i class="fas fa-home"></i>
             <span>Home</span>
         </a>
-        <a href="compose.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'compose.php' ? 'active' : ''; ?>">
-            <i class="fas fa-pen"></i>
-            <span>Compose</span>
-        </a>
         <a href="inbox.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'inbox.php' ? 'active' : ''; ?>">
             <i class="fas fa-envelope"></i>
             <span>Inbox</span>
         </a>
+        <a href="calendar.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'calendar.php' ? 'active' : ''; ?>">
+            <i class="fas fa-calendar-day"></i>
+            <span>Calendar</span>
+        </a>
+
         <a href="sent.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'sent.php' ? 'active' : ''; ?>">
             <i class="fas fa-paper-plane"></i>
             <span>Sent</span>

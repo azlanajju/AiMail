@@ -58,7 +58,9 @@ class OutlookMailFetcher {
     private $scopes = [
         'offline_access',
         'https://graph.microsoft.com/Mail.Read',
-        'https://graph.microsoft.com/User.Read'
+        'https://graph.microsoft.com/User.Read',
+        'https://graph.microsoft.com/Calendars.Read',
+        'https://graph.microsoft.com/Calendars.ReadBasic'
     ];
 
     public function __construct() {
