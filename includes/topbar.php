@@ -9,7 +9,7 @@
     <div class="right-section">
         <div class="notifications">
             <i class="fas fa-bell"></i>
-            <span class="notification-badge">3</span>
+            <!-- <span class="notification-badge">.</span> -->
         </div>
         
         <div class="user-profile">
