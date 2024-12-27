@@ -67,19 +67,16 @@ error_log('Emails data: ' . print_r($emails, true));
     <title>AIINBOX - Inbox</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * {
+        body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: #f5f5f5;
+            background: #f8f9ff;
         }
 
         .container {
             margin-left: 250px;
+            margin-top: 60px;
             padding: 20px;
         }
 
@@ -88,77 +85,189 @@ error_log('Emails data: ' . print_r($emails, true));
             margin: 0 auto;
         }
 
-        .header {
+        .inbox-header {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(94, 100, 255, 0.1);
+            margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .search-bar input {
-            padding: 10px 20px;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            width: 300px;
-            font-size: 14px;
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: #f5f7ff;
+            color: #5e64ff;
         }
 
         .email-list {
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(94, 100, 255, 0.1);
             overflow: hidden;
         }
 
         .email-item {
-            padding: 20px;
-            border-bottom: 1px solid #eee;
+            display: flex;
+            padding: 16px 20px;
+            border-bottom: 1px solid #eef0ff;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s ease;
+            align-items: flex-start;
+            gap: 15px;
         }
 
         .email-item:hover {
-            background-color: #f8f9fa;
+            background: #f8f9ff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(94, 100, 255, 0.1);
         }
 
-        .email-item:last-child {
-            border-bottom: none;
+        .email-item.unread {
+            background: #f8f9ff;
+        }
+
+        .email-item.unread .email-from,
+        .email-item.unread .email-subject {
+            font-weight: 600;
+            color: #5e64ff;
+        }
+
+        .email-checkbox {
+            padding-right: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .email-content {
+            flex: 1;
+            min-width: 0;
         }
 
         .email-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
+            align-items: flex-start;
+            margin-bottom: 6px;
         }
 
         .email-from {
-            font-weight: 600;
+            font-weight: 500;
             color: #333;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
         }
 
-        .email-date {
+        .email-time {
             color: #666;
-            font-size: 0.9em;
+            font-size: 12px;
+            white-space: nowrap;
         }
 
         .email-subject {
+            color: #333;
+            margin-bottom: 4px;
+            font-size: 14px;
             font-weight: 500;
-            color: #1a73e8;
-            margin-bottom: 8px;
         }
 
         .email-preview {
             color: #666;
-            font-size: 0.9em;
-            line-height: 1.4;
+            font-size: 13px;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 1;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            line-height: 1.4;
+        }
+
+        .email-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .reply-link {
+            color: #5e64ff;
+            text-decoration: none;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .reply-link:hover {
+            background: #f5f7ff;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background: white;
+            margin: 50px auto;
+            width: 90%;
+            max-width: 800px;
+            height: calc(100vh - 100px);
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(94, 100, 255, 0.15);
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eef0ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9ff;
+        }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+        }
+
+        .error-message {
+            background: #fff5f5;
+            color: #ff4757;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .no-emails {
@@ -167,53 +276,54 @@ error_log('Emails data: ' . print_r($emails, true));
             color: #666;
         }
 
-        .error-message {
-            background: #fee;
-            color: #c00;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+        .no-emails i {
+            font-size: 3em;
+            color: #5e64ff;
+            margin-bottom: 15px;
         }
 
-        .email-actions {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+        @media (max-width: 768px) {
+            .container {
+                margin-left: 0;
+                padding: 10px;
+            }
 
-        .reply-btn {
-            color: #1a73e8;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: background-color 0.2s;
-        }
+            .email-meta {
+                flex-direction: column;
+                align-items: flex-end;
+            }
 
-        .reply-btn:hover {
-            background-color: #f0f7ff;
+            .email-preview {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
     <?php include 'includes/sidebar.php'; ?>
+    <?php include 'includes/topbar.php'; ?>
     
     <div class="container">
         <div class="main-content">
-            <div class="header">
-                <div class="search-bar">
-                    <input type="text" placeholder="Search in mail">
-                </div>
-                <div class="user-profile">
-                    <i class="fas fa-cog"></i>
-                    <i class="fas fa-user-circle"></i>
+            <div class="inbox-header">
+                <div class="header-actions">
+                    <button class="action-btn">
+                        <i class="fas fa-check-square"></i>
+                    </button>
+                    <button class="action-btn">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                    <button class="action-btn">
+                        <i class="fas fa-archive"></i>
+                    </button>
+                    <button class="action-btn">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </div>
             </div>
 
             <div class="email-list">
-                <?php
+                <?php 
                 if (isset($emails['error'])) {
                     echo '<div class="error-message">';
                     echo '<i class="fas fa-exclamation-circle"></i> ';
@@ -221,22 +331,45 @@ error_log('Emails data: ' . print_r($emails, true));
                     echo '</div>';
                 } else if (empty($emails)) {
                     echo '<div class="no-emails">';
-                    echo '<i class="fas fa-inbox"></i> No emails found';
+                    echo '<i class="fas fa-inbox"></i>';
+                    echo '<p>Your inbox is empty</p>';
                     echo '</div>';
                 } else {
                     foreach ($emails as $email) {
                         $date = new DateTime($email['receivedDateTime']);
-                        echo '<div class="email-item" data-email-id="' . htmlspecialchars($email['id']) . '">';
-                        echo '<div class="email-header">';
-                        echo '<span class="email-from">' . htmlspecialchars($email['from']['emailAddress']['address']) . '</span>';
-                        echo '<div class="email-actions">';
-                        echo '<a href="reply.php?id=' . htmlspecialchars($email['id']) . '" class="reply-btn"><i class="fas fa-reply"></i> Reply</a>';
-                        echo '<span class="email-date">' . $date->format('M j, g:i A') . '</span>';
-                        echo '</div>';
-                        echo '</div>';
-                        echo '<div class="email-subject">' . htmlspecialchars($email['subject']) . '</div>';
-                        echo '<div class="email-preview">' . htmlspecialchars($email['bodyPreview']) . '</div>';
-                        echo '</div>';
+                        ?>
+                        <div class="email-item <?php echo isset($email['isRead']) && !$email['isRead'] ? 'unread' : ''; ?>" 
+                             data-email-id="<?php echo htmlspecialchars($email['id']); ?>">
+                            <div class="email-checkbox">
+                                <input type="checkbox" id="check-<?php echo htmlspecialchars($email['id']); ?>">
+                                <label for="check-<?php echo htmlspecialchars($email['id']); ?>"></label>
+                            </div>
+                            <div class="email-content">
+                                <div class="email-header">
+                                    <div class="email-from">
+                                        <?php 
+                                        $from = $email['from']['emailAddress']['address'] ?? '';
+                                        echo htmlspecialchars($from);
+                                        ?>
+                                    </div>
+                                    <div class="email-actions">
+                                        <?php if ($email['hasAttachments'] ?? false): ?>
+                                            <i class="fas fa-paperclip" style="color: #666;"></i>
+                                        <?php endif; ?>
+                                        <span class="email-time">
+                                            <?php echo $date->format('M j, g:i A'); ?>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="email-subject">
+                                    <?php echo htmlspecialchars($email['subject'] ?? 'No Subject'); ?>
+                                </div>
+                                <div class="email-preview">
+                                    <?php echo htmlspecialchars($email['bodyPreview'] ?? ''); ?>
+                                </div>
+                            </div>
+                        </div>
+                        <?php
                     }
                 }
                 ?>
