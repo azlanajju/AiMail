@@ -218,3 +218,77 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script> 
+
+<!-- Add this at the end of your body tag, before the closing </body> -->
+<a style="display: <?php echo $activePage != 'compose' ? 'flex' : 'none'; ?>" href="<?php echo $path ?>compose" class="fixed-compose-btn" title="Compose New Email">
+    <i class="fas fa-pen"></i>
+</a>
+
+<style>
+/* Add these styles to your existing CSS */
+.fixed-compose-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background-color: #5e64ff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(94, 100, 255, 0.25);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.fixed-compose-btn i {
+    font-size: 24px;
+}
+
+.fixed-compose-btn:hover {
+    transform: translateY(-2px);
+    background-color: #4c52cc;
+    box-shadow: 0 6px 16px rgba(94, 100, 255, 0.3);
+}
+
+/* Add animation for the button */
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 0.9;
+        transform: scale(1.1);
+    }
+    80% {
+        opacity: 1;
+        transform: scale(0.89);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.fixed-compose-btn {
+    animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .fixed-compose-btn {
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+    }
+
+    .fixed-compose-btn i {
+        font-size: 20px;
+    }
+}
+</style>
