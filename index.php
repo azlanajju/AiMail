@@ -47,7 +47,7 @@ session_start();
 
 // If already authenticated, redirect to home
 if (isset($_SESSION['access_token'])) {
-    header('Location: home.php');
+    header('Location: ./home');
     exit;
 }
 
@@ -153,92 +153,267 @@ if (isset($_GET['poll']) && isset($_SESSION['device_code'])) {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AIINBOX - Login</title>
+    <title>Smart Compose - Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #5e64ff 0%, #8b92ff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        
+
         .login-container {
-            background: white;
-            padding: 2.5em;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 420px;
+            padding: 2.5rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             text-align: center;
-            max-width: 400px;
-            width: 90%;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            margin: 20px;
         }
-        
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #5e64ff, #8b92ff);
+        }
+
         .logo {
-            margin-bottom: 1.5em;
+            margin-bottom: 2rem;
+            position: relative;
         }
-        
+
+        .logo img {
+            height: 70px;
+            margin-bottom: 1rem;
+        }
+
+        .logo::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 2px;
+            background: #5e64ff;
+            margin: 1rem auto;
+        }
+
         h2 {
-            color: #333;
-            margin-bottom: 1em;
+            color: #2d3748;
+            font-size: 1.75rem;
+            margin-bottom: 2rem;
+            font-weight: 600;
         }
-        
-        .code {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #1a73e8;
-            margin: 1em 0;
-            letter-spacing: 2px;
-            font-family: monospace;
-        }
-        
-        .link {
-            color: #1a73e8;
-            text-decoration: none;
-            font-weight: 500;
-            display: inline-block;
-            margin-top: 1em;
-            padding: 0.5em 1em;
-            border: 2px solid #1a73e8;
-            border-radius: 24px;
-            transition: all 0.3s ease;
-        }
-        
-        .link:hover {
-            background: #1a73e8;
-            color: white;
-        }
-        
+
         .instructions {
-            color: #666;
-            margin: 1.5em 0;
+            color: #4a5568;
+            margin: 1.5rem 0;
             line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .code {
+            background: #f7fafc;
+            padding: 1.5rem;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #5e64ff;
+            letter-spacing: 4px;
+            margin: 1.5rem 0;
+            border: 2px dashed #e2e8f0;
+            text-shadow: 1px 1px 0 rgba(94, 100, 255, 0.1);
+        }
+
+        .link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #5e64ff;
+            color: white;
+            text-decoration: none;
+            padding: 0.875rem 2rem;
+            border-radius: 50px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 15px rgba(94, 100, 255, 0.2);
+        }
+
+        .link:hover {
+            background: #4a51ff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(94, 100, 255, 0.3);
+        }
+
+        .link i {
+            font-size: 1.1em;
+        }
+
+        .status-message {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 12px;
+            background: #f8fafc;
+            color: #4a5568;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .status-message i {
+            color: #5e64ff;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .wave {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.1)" d="M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .code {
+                font-size: 1.5rem;
+                padding: 1rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        .code-container {
+            position: relative;
+            margin: 1.5rem 0;
+        }
+
+        .code {
+            padding-right: 3rem;
+        }
+
+        .copy-button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #5e64ff;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .copy-button:hover {
+            background: rgba(94, 100, 255, 0.1);
+        }
+
+        .copy-button i {
+            font-size: 1.2rem;
+        }
+
+        .copy-tooltip {
+            position: absolute;
+            right: -5px;
+            top: -30px;
+            background: #2d3748;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+        }
+
+        .copy-tooltip.show {
+            opacity: 1;
         }
     </style>
 </head>
 <body>
+    <div class="wave"></div>
     <div class="login-container">
         <div class="logo">
-            <img src="assets/images/aiinbox-logo.png" alt="AIINBOX" height="40">
+            <img src="./images/smart_compse_fullLogo.png" alt="Smart Compose">
         </div>
-        <h2>Sign in to AIINBOX</h2>
+        <h2>Welcome to Smart Compose</h2>
         <?php if (isset($_SESSION['user_code'])): ?>
             <p class="instructions">To continue, please enter this code:</p>
-            <div class="code"><?php echo htmlspecialchars($_SESSION['user_code']); ?></div>
-            <p class="instructions">at Microsoft's device login page:</p>
+            <div class="code-container">
+                <div class="code"><?php echo htmlspecialchars($_SESSION['user_code']); ?></div>
+                <button class="copy-button" onclick="copyCode()">
+                    <i class="fas fa-copy"></i>
+                    <span class="copy-tooltip">Copied!</span>
+                </button>
+            </div>
+            <p class="instructions">at Microsoft's device login page</p>
             <a href="<?php echo htmlspecialchars($_SESSION['verification_uri']); ?>" 
                target="_blank" 
-               class="link">Open Microsoft Login</a>
+               class="link">
+                <i class="fas fa-external-link-alt"></i>
+                Open Microsoft Login
+            </a>
+            <div class="status-message">
+                <i class="fas fa-sync-alt"></i>
+                Waiting for authentication...
+            </div>
             
             <script>
+            function copyCode() {
+                const code = '<?php echo isset($_SESSION['user_code']) ? $_SESSION['user_code'] : ''; ?>';
+                navigator.clipboard.writeText(code).then(() => {
+                    const tooltip = document.querySelector('.copy-tooltip');
+                    tooltip.classList.add('show');
+                    setTimeout(() => {
+                        tooltip.classList.remove('show');
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy:', err);
+                });
+            }
+
             function pollForToken() {
                 fetch('index.php?poll=1')
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            window.location.href = 'home.php';
+                            window.location.href = './home';
                         } else if (data.error === 'pending') {
                             setTimeout(pollForToken, 5000);
                         }
@@ -255,4 +430,4 @@ if (isset($_GET['poll']) && isset($_SESSION['device_code'])) {
     </div>
 </body>
 </html>
-?>
+
