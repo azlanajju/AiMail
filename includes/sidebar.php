@@ -48,10 +48,10 @@
     </nav>
 
     <div class="user-section">
-        <div class="user-info">
+        <!-- <div class="user-info">
             <i class="fas fa-user-circle"></i>
             <span><?php echo $_SESSION['user_name'] ?? 'User'; ?></span>
-        </div>
+        </div> -->
         <a href="logout.php" class="logout-btn">
             <i class="fas fa-sign-out-alt"></i>
             <span>Logout</span>
@@ -131,6 +131,7 @@ color: #000;
 .user-section {
     padding: 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
 }
 
 .logout-btn {

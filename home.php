@@ -28,6 +28,7 @@ if (isset($_SESSION['summary']) && isset($_SESSION['summary_timestamp'])) {
 </head>
 <body>
     <?php include 'includes/sidebar.php'; ?>
+    <?php include 'includes/topbar.php'; ?>
 
     <div class="container">
         <div class="main-content">
@@ -40,7 +41,11 @@ if (isset($_SESSION['summary']) && isset($_SESSION['summary_timestamp'])) {
                                 <i class="fas fa-sync-alt"></i> Refresh
                             </button>
                         </div>
-
+                        <?php if (isset($_SESSION['summary_timestamp']) && !$shouldRefreshSummary): ?>
+                        <div class="last-updated">
+                            Last updated: <?php echo date('g:i A', $_SESSION['summary_timestamp']); ?>
+                        </div>
+                        <?php endif; ?>
                         <div class="loader-container">
                             <div class="loader"></div>
                             <div class="loader-text">Analyzing your emails...</div>
@@ -54,11 +59,7 @@ if (isset($_SESSION['summary']) && isset($_SESSION['summary_timestamp'])) {
                             ?>
                         </div>
 
-                        <?php if (isset($_SESSION['summary_timestamp']) && !$shouldRefreshSummary): ?>
-                        <div class="last-updated">
-                            Last updated: <?php echo date('g:i A', $_SESSION['summary_timestamp']); ?>
-                        </div>
-                        <?php endif; ?>
+
                     </div>
                 </div>
 
@@ -238,11 +239,11 @@ if (isset($_SESSION['summary']) && isset($_SESSION['summary_timestamp'])) {
         }
 
         .container {
-            margin-left: 250px;
-            padding: 20px;
-            max-width: 100%;
-        }
-
+    margin-left: 250px;
+    margin-top: 60px; 
+    padding: 20px;
+    max-width: 100%;
+}
         .main-content {
             padding: 20px;
             max-width: 100%;
@@ -262,7 +263,7 @@ if (isset($_SESSION['summary']) && isset($_SESSION['summary_timestamp'])) {
 
         .summary-section,
         .today-events-section {
-            height: calc(100vh - 100px); /* Adjust based on your header/padding */
+            /* height: calc(100vh - 100px); Adjust based on your header/padding */
             overflow-y: auto;
             position: relative;
         }
@@ -412,7 +413,6 @@ if (isset($_SESSION['summary']) && isset($_SESSION['summary_timestamp'])) {
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 2px 12px rgba(94, 100, 255, 0.1);
-            margin-top: 30px;
         }
 
         .section-header {
@@ -567,7 +567,7 @@ if (isset($_SESSION['summary']) && isset($_SESSION['summary_timestamp'])) {
         .summary-header,
         .section-header {
             position: sticky;
-            top: -100px;
+            top: 0;
             background: white;
             z-index: 10;
             padding-top: 15px;
