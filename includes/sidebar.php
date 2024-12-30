@@ -2,7 +2,7 @@
 
 <div class="sidebar">
     <div class="logo">
-        <img src="<?php echo $path?>images/smart_compse_fullLogo.png" alt="Smart Compose Logo">
+        <img src="<?php echo $path?>images/smart_compse_fullLogo.svg" alt="Smart Compose Logo">
     </div>
     
     <nav class="nav-menu">
@@ -86,11 +86,11 @@
     font-weight: bold;
     color: white;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    margin-bottom: 20px;
     background: #fff;
+    margin-bottom: -20px;
 }
 .logo img{
-height: 50px;    
+height: 100px;    
 }
 
 .nav-menu {

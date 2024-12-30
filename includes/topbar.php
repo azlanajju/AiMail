@@ -20,7 +20,7 @@
             <i class="fas fa-chevron-down"></i>
             
             <div class="profile-dropdown">
-                <a href="profile.php" class="dropdown-item">
+                <a href="<?php echo $path ?>profile" class="dropdown-item">
                     <i class="fas fa-user"></i> Profile
                 </a>
                 <a href="settings.php" class="dropdown-item">
