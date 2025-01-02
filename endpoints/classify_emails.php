@@ -24,11 +24,7 @@ function classifyEmails($emails) {
 Analyze these emails and create exactly 5 categories. Follow these rules strictly:
 
 1. Create these specific categories:
-   - "Project Communications"
-   - "Client Meetings"
-   - "Internal Updates"
-   - "Action Items"
-   - "General"
+based on different projects and tasks 
 
 2. Format the response as valid JSON like this:
 {

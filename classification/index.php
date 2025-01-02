@@ -41,10 +41,10 @@ $emails = json_decode($response, true);
     <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-    <?php include '../includes/sidebar.php'; ?>
+    <?php $activePage="classification"; $path="../"; include '../includes/sidebar.php'; ?>
     
     <div class="content-wrapper">
-        <?php include '../includes/topbar.php'; ?>
+        <?php  $path="../"; include '../includes/topbar.php'; ?>
 
         <div class="container mt-4">
             <div class="row">
