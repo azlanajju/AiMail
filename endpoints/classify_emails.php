@@ -24,14 +24,14 @@ function classifyEmails($emails) {
 Analyze these emails and create exactly 5 categories. Follow these rules strictly:
 
 1. Create these specific categories:
-based on different projects and tasks 
+based on different projects and tasks also mention the project name and task name
 
 2. Format the response as valid JSON like this:
 {
     "categories": [
         {
-            "name": "Project Communications",
-            "description": "Emails related to ongoing projects",
+            "name": "Example category",
+            "description": "Emails related to example category",
             "emailIds": [0, 1, 2]
         }
     ]

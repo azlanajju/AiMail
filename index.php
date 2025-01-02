@@ -155,6 +155,8 @@ if (isset($_GET['poll']) && isset($_SESSION['device_code'])) {
 <head>
     <title>Smart Compose - Login</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="./images/favocon.png">
+
     <style>
         body {
             margin: 0;
@@ -197,8 +199,8 @@ if (isset($_GET['poll']) && isset($_SESSION['device_code'])) {
         }
 
         .logo img {
-            height: 70px;
-            margin-bottom: 1rem;
+            height: 100px;
+            margin-bottom: 0.5rem;
         }
 
         .logo::after {
@@ -382,7 +384,7 @@ if (isset($_GET['poll']) && isset($_SESSION['device_code'])) {
     <div class="wave"></div>
     <div class="login-container">
         <div class="logo">
-            <img src="./images/smart_compse_fullLogo.png" alt="Smart Compose">
+            <img src="./images/msitake.png" alt="Smart Compose">
         </div>
         <h2>Welcome to Smart Compose</h2>
         <?php if (isset($_SESSION['user_code'])): ?>

@@ -140,17 +140,34 @@ $emails = $emailViewer->fetchSentEmails();
         }
 
         const modalBody = modal.querySelector('.modal-body');
-        modalBody.innerHTML = '<div style="text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+        modalBody.innerHTML = `
+            <div class="loading-spinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <div>Loading email...</div>
+            </div>
+        `;
+        
         modal.style.display = 'block';
 
-        fetch(`../get_email.php?id=${encodeURIComponent(emailId)}`)
+        fetch(`./get_email.php?id=${encodeURIComponent(emailId)}`)
             .then(response => response.json())
             .then(email => {
+                if (!email || email.error) {
+                    throw new Error(email.error || 'Failed to load email');
+                }
                 modal.setAttribute('data-email-id', email.id);
                 renderEmail(email);
             })
             .catch(error => {
-                modalBody.innerHTML = `<div class="error">Error loading email: ${error.message}</div>`;
+                console.error('Error:', error);
+                modalBody.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Error loading email: ${error.message}</p>
+                    </div>
+                `;
             });
     }
 
@@ -164,11 +181,14 @@ $emails = $emailViewer->fetchSentEmails();
 
         modalBody.innerHTML = `
             <div class="email-full-content">
-                <div class="sender-info">
-                    <div class="sender-details">
-                        <div class="sender-name">To: ${recipients}</div>
+                <div class="email-header-full">
+                    <div class="recipient-info">
+                        <div class="recipient-label">To:</div>
+                        <div class="recipient-list">${recipients}</div>
                     </div>
-                    <div class="email-date">${new Date(email.receivedDateTime).toLocaleString()}</div>
+                    <div class="email-date-full">
+                        ${new Date(email.receivedDateTime).toLocaleString()}
+                    </div>
                 </div>
                 <div class="email-subject-full">
                     <h3>${email.subject || 'No Subject'}</h3>
@@ -176,16 +196,26 @@ $emails = $emailViewer->fetchSentEmails();
                 <div class="email-body-content">
                     ${email.body?.content || ''}
                 </div>
+                ${email.hasAttachments ? `
+                    <div class="attachments-section">
+                        <h4>Attachments</h4>
+                        <div class="attachments-list">
+                            Loading attachments...
+                        </div>
+                    </div>
+                ` : ''}
             </div>
         `;
+
+        if (email.hasAttachments) {
+            fetchAttachments(email.id);
+        }
     }
 
-    // Close modal when clicking the close button
     document.querySelector('.close-modal')?.addEventListener('click', function() {
         document.getElementById('email-modal').style.display = 'none';
     });
 
-    // Close modal when clicking outside
     window.addEventListener('click', function(event) {
         const modal = document.getElementById('email-modal');
         if (event.target === modal) {
@@ -193,7 +223,6 @@ $emails = $emailViewer->fetchSentEmails();
         }
     });
 
-    // Handle Delete button clicks
     document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', async function(e) {
             e.stopPropagation();
@@ -225,5 +254,73 @@ $emails = $emailViewer->fetchSentEmails();
         });
     });
     </script>
+
+    <style>
+    .email-full-content {
+        padding: 20px;
+    }
+
+    .email-header-full {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .recipient-info {
+        display: flex;
+        gap: 10px;
+    }
+
+    .recipient-label {
+        color: #666;
+        min-width: 30px;
+    }
+
+    .recipient-list {
+        color: #333;
+    }
+
+    .email-date-full {
+        color: #666;
+        font-size: 0.9em;
+    }
+
+    .email-subject-full h3 {
+        margin: 0 0 20px 0;
+        color: #333;
+        font-size: 1.25rem;
+    }
+
+    .email-body-content {
+        line-height: 1.6;
+        color: #333;
+    }
+
+    .loading-spinner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+        color: #666;
+    }
+
+    .error-message {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px;
+        color: #dc3545;
+        text-align: center;
+    }
+
+    .error-message i {
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+    </style>
 </body>
 </html>

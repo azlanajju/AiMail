@@ -1,3 +1,7 @@
+<head> 
+<link rel="icon" type="image/x-icon" href="<?php echo $path?>images/image.ico">
+
+</head>
 <div class="topbar">
     <div class="left-section">
         <div class="search-container">
@@ -11,6 +15,8 @@
 
             <i title="Notifications" class="fas fa-bell"></i>
             <i onclick="window.location.href='<?php echo $path; ?>chatbot'" title="Chatbot" class="fas fa-comment"></i>
+            <i onclick="window.location.href='<?php echo $path; ?>classification'" title="Classification" class="fas fa-cogs"></i>
+
 
 
         </div>

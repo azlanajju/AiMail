@@ -35,9 +35,9 @@
             <i class="fas fa-exclamation-circle"></i>
             <span>Spam</span>
         </a>
-        <a href="<?php echo $path?>starred" class="nav-item <?php echo $activePage == 'starred' ? 'active' : ''; ?>">
-            <i class="fas fa-star"></i>
-            <span>Starred</span>
+        <a href="<?php echo $path?>classification" class="nav-item <?php echo $activePage == 'classification' ? 'active' : ''; ?>">
+            <i class="fas fa-cogs"></i>
+            <span>Classifications</span>
         </a>
         <!-- <a href="important" class="nav-item <?php echo $activePage == 'important' ? 'active' : ''; ?>">
             <i class="fas fa-bookmark"></i>
