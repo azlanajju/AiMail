@@ -10,8 +10,8 @@ require_once '../vendor/autoload.php';
 $parsedown = new Parsedown();
 
 // Add summary and calendar timestamp checks
-$summaryExpiration = 5 * 60; // 5 minutes in seconds
-$calendarExpiration = 5 * 60; // 5 minutes in seconds
+$summaryExpiration = 15 * 60; // 15 minutes in seconds
+$calendarExpiration = 15 * 60; // 15 minutes in seconds
 
 $shouldRefreshSummary = true;
 $shouldRefreshCalendar = true;
@@ -54,7 +54,12 @@ if (isset($_SESSION['calendar_events']) && isset($_SESSION['calendar_timestamp']
                         </div>
                         <?php if (isset($_SESSION['summary_timestamp']) && !$shouldRefreshSummary): ?>
                         <div class="last-updated">
-                            Last updated: <?php echo date('g:i A', $_SESSION['summary_timestamp']); ?>
+                            Last updated: <?php 
+                                $timestamp = new DateTime();
+                                $timestamp->setTimestamp($_SESSION['summary_timestamp']);
+                                $timestamp->setTimezone(new DateTimeZone('Asia/Kolkata'));
+                                echo $timestamp->format('g:i A'); 
+                            ?>
                         </div>
                         <?php endif; ?>
                         <div class="loader-container" style="display: none;">
@@ -130,7 +135,16 @@ if (isset($_SESSION['calendar_events']) && isset($_SESSION['calendar_timestamp']
                 if (data && data.summary) {
                     document.getElementById('summary-content').innerHTML = marked.parse(data.summary);
                     
-                    const timeString = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                    // Convert time to IST
+                    const date = new Date();
+                    const options = { 
+                        hour: 'numeric', 
+                        minute: '2-digit', 
+                        hour12: true,
+                        timeZone: 'Asia/Kolkata'
+                    };
+                    const timeString = date.toLocaleTimeString('en-US', options);
+                    
                     const lastUpdated = document.querySelector('.last-updated');
                     if (lastUpdated) {
                         lastUpdated.textContent = `Last updated: ${timeString}`;
@@ -238,7 +252,8 @@ if (isset($_SESSION['calendar_events']) && isset($_SESSION['calendar_timestamp']
         return new Date(dateString).toLocaleTimeString('en-US', { 
             hour: 'numeric', 
             minute: '2-digit',
-            hour12: true 
+            hour12: true,
+            timeZone: 'Asia/Kolkata'
         });
     }
     </script>

@@ -8,8 +8,11 @@
     
     <div class="right-section">
         <div class="notifications">
-            <i class="fas fa-bell"></i>
-            <!-- <span class="notification-badge">.</span> -->
+
+            <i title="Notifications" class="fas fa-bell"></i>
+            <i onclick="window.location.href='<?php echo $path; ?>chatbot'" title="Chatbot" class="fas fa-comment"></i>
+
+
         </div>
         
         <div class="user-profile">
@@ -99,6 +102,11 @@
 .notifications i {
     font-size: 18px;
     color: #666;
+    /* margin-left: 10px; */
+    padding:0 10px;
+    border-left: 2px solid #eef0ff;
+    border-right: 2px solid #eef0ff;
+
 }
 
 .notification-badge {
@@ -220,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script> 
 
 <!-- Add this at the end of your body tag, before the closing </body> -->
-<a style="display: <?php echo $activePage != 'compose' ? 'flex' : 'none'; ?>" href="<?php echo $path ?>compose" class="fixed-compose-btn" title="Compose New Email">
+<a style="display: <?php echo $activePage != 'compose' && $activePage != 'home' ? 'flex' : 'none'; ?>" href="<?php echo $path ?>compose" class="fixed-compose-btn" title="Compose New Email">
     <i class="fas fa-pen"></i>
 </a>
 

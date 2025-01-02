@@ -198,46 +198,81 @@ $emails = $emailViewer->fetchTrashEmails();
             });
         });
 
-        function handleEmailAction(emailId, action, emailItem) {
-            fetch('trash.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `action=${action}&emailId=${encodeURIComponent(emailId)}`
-            })
-            .then(response => response.json())
-            .then(data => {
+        async function handleEmailAction(emailId, action, emailItem) {
+            try {
+                const response = await fetch('../endpoints/trash_actions.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: action,
+                        emailId: emailId
+                    })
+                });
+
+                const data = await response.json();
+
                 if (data.success) {
                     emailItem.remove();
+                    // Check if trash is empty after removal
                     if (document.querySelectorAll('.email-item').length === 0) {
-                        location.reload(); // Refresh to show empty state
+                        location.reload();
                     }
                 } else {
-                    alert(`Failed to ${action} email`);
+                    throw new Error(data.error || `Failed to ${action} email`);
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Error:', error);
-                alert(`Error ${action}ing email`);
-            });
+                alert(`Error ${action}ing email: ${error.message}`);
+            }
         }
 
         function emptyTrash() {
-            if (confirm('Permanently delete all items in trash? This cannot be undone.')) {
-                const emailItems = document.querySelectorAll('.email-item');
-                let processed = 0;
-                
-                emailItems.forEach(item => {
+            if (!confirm('Permanently delete all items in trash? This cannot be undone.')) {
+                return;
+            }
+
+            const emailItems = document.querySelectorAll('.email-item');
+            let processed = 0;
+            let errors = [];
+
+            emailItems.forEach(async (item) => {
+                try {
                     const emailId = item.dataset.emailId;
-                    handleEmailAction(emailId, 'delete', item);
+                    const response = await fetch('../endpoints/trash_actions.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            action: 'delete',
+                            emailId: emailId
+                        })
+                    });
+
+                    const data = await response.json();
                     processed++;
-                    
+
+                    if (data.success) {
+                        item.remove();
+                    } else {
+                        errors.push(`Failed to delete email ${emailId}`);
+                    }
+
+                    // Check if all items have been processed
                     if (processed === emailItems.length) {
+                        if (errors.length > 0) {
+                            alert('Some emails could not be deleted:\n' + errors.join('\n'));
+                        }
                         location.reload();
                     }
-                });
-            }
+                } catch (error) {
+                    console.error('Error:', error);
+                    errors.push(`Error deleting email: ${error.message}`);
+                    processed++;
+                }
+            });
         }
     </script>
 </body>

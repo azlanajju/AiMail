@@ -6,6 +6,113 @@ if (!isset($_SESSION['access_token'])) {
     exit;
 }
 
+function fetchEmails($accessToken) {
+    // First, get the inbox folder ID
+    $folderEndpoint = 'https://graph.microsoft.com/v1.0/me/mailFolders';
+    
+    $ch = curl_init($folderEndpoint);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER => [
+            'Authorization: Bearer ' . $accessToken,
+            'Content-Type: application/json'
+        ]
+    ]);
+    
+    $folderResponse = curl_exec($ch);
+    $folderData = json_decode($folderResponse, true);
+    
+    if (!isset($folderData['value'])) {
+        error_log('Failed to fetch folders: ' . $folderResponse);
+        return ['error' => 'Failed to fetch folders'];
+    }
+    
+    // Find the inbox folder ID
+    $inboxId = null;
+    foreach ($folderData['value'] as $folder) {
+        if (strtolower($folder['displayName']) === 'inbox') {
+            $inboxId = $folder['id'];
+            break;
+        }
+    }
+    
+    if (!$inboxId) {
+        error_log('Inbox folder not found');
+        return ['error' => 'Inbox folder not found'];
+    }
+    
+    // Now fetch only inbox emails using the folder ID
+    $endpoint = "https://graph.microsoft.com/v1.0/me/mailFolders/$inboxId/messages";
+    
+    $params = http_build_query([
+        '$top' => 50,
+        '$select' => 'id,subject,bodyPreview,from,receivedDateTime,isRead,hasAttachments',
+        '$orderby' => 'receivedDateTime desc',
+        '$filter' => "isDraft eq false"
+    ]);
+
+    $ch = curl_init($endpoint . '?' . $params);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER => [
+            'Authorization: Bearer ' . $accessToken,
+            'Content-Type: application/json',
+            'Prefer: outlook.body-content-type="text"'
+        ]
+    ]);
+
+    $response = curl_exec($ch);
+    
+    if(curl_errno($ch)) {
+        error_log('Error fetching emails: ' . curl_error($ch));
+        return ['error' => 'Failed to fetch emails'];
+    }
+    
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode !== 200) {
+        error_log('API Error: ' . $response);
+        return ['error' => 'Failed to fetch emails'];
+    }
+
+    $data = json_decode($response, true);
+    
+    if (!isset($data['value'])) {
+        error_log('Invalid API response: ' . $response);
+        return ['error' => 'Invalid response from email server'];
+    }
+
+    // Filter out any non-inbox emails (additional safety check)
+    $data['value'] = array_filter($data['value'], function($email) {
+        return !isset($email['parentFolderId']) || 
+               $email['parentFolderId'] === $inboxId;
+    });
+
+    // Sort emails by date (newest first)
+    usort($data['value'], function($a, $b) {
+        return strtotime($b['receivedDateTime']) - strtotime($a['receivedDateTime']);
+    });
+
+    return $data;
+}
+
+// Debug logging to check what's being returned
+try {
+    $emails = fetchEmails($_SESSION['access_token']);
+    
+    if (isset($emails['error'])) {
+        throw new Exception($emails['error']);
+    }
+    
+    // Add debug logging
+    error_log('Number of emails fetched: ' . count($emails['value']));
+    
+} catch (Exception $e) {
+    error_log('Inbox error: ' . $e->getMessage());
+    $emails = ['error' => $e->getMessage()];
+}
+
 class EmailViewer {
     private $accessToken;
 
@@ -374,6 +481,74 @@ error_log('Emails data: ' . print_r($emails, true));
         .attachment-download:hover {
             background: #eef0ff;
         }
+
+        .email-checkbox {
+            padding-right: 15px;
+        }
+
+        .email-select {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .bulk-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .selected-count {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .email-item.selected {
+            background-color: #f8f9ff;
+        }
+
+        .delete-btn {
+            color: #d93025;
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .delete-btn:hover {
+            background-color: #ffebee;
+        }
+
+        .delete-selected {
+            background-color: #d93025;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .delete-selected:hover {
+            background-color: #c62828;
+        }
+
+        .refresh-btn, .select-all-btn {
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            color: #666;
+            transition: all 0.2s ease;
+        }
+
+        .refresh-btn:hover, .select-all-btn:hover {
+            background-color: #f5f7ff;
+            color: #5e64ff;
+        }
     </style>
 </head>
 <body>
@@ -384,18 +559,18 @@ error_log('Emails data: ' . print_r($emails, true));
     <div class="container">
         <div class="main-content">
             <div class="inbox-header">
+                <div class="bulk-actions" style="display: none;">
+                    <span class="selected-count">0 selected</span>
+                    <button class="action-btn delete-selected" title="Delete Selected">
+                        <i class="fas fa-trash"></i> Delete Selected
+                    </button>
+                </div>
                 <div class="header-actions">
-                    <button class="action-btn">
+                    <button class="action-btn refresh-btn" title="Refresh">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="action-btn select-all-btn" title="Select All">
                         <i class="fas fa-check-square"></i>
-                    </button>
-                    <button class="action-btn">
-                        <i class="fas fa-redo"></i>
-                    </button>
-                    <button class="action-btn">
-                        <i class="fas fa-archive"></i>
-                    </button>
-                    <button class="action-btn">
-                        <i class="fas fa-trash"></i>
                     </button>
                 </div>
             </div>
@@ -419,8 +594,7 @@ error_log('Emails data: ' . print_r($emails, true));
                         <div class="email-item <?php echo isset($email['isRead']) && !$email['isRead'] ? 'unread' : ''; ?>" 
                              data-email-id="<?php echo htmlspecialchars($email['id']); ?>">
                             <div class="email-checkbox">
-                                <input type="checkbox" id="check-<?php echo htmlspecialchars($email['id']); ?>">
-                                <label for="check-<?php echo htmlspecialchars($email['id']); ?>"></label>
+                                <input type="checkbox" class="email-select" aria-label="Select email">
                             </div>
                             <div class="email-content">
                                 <div class="email-header">
@@ -434,10 +608,14 @@ error_log('Emails data: ' . print_r($emails, true));
                                         <?php if ($email['hasAttachments'] ?? false): ?>
                                             <i class="fas fa-paperclip" style="color: #666;"></i>
                                         <?php endif; ?>
+                                        <button class="action-btn delete-btn" title="Move to Trash">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                         <span class="email-time">
                                             <?php echo $date->format('M j, g:i A'); ?>
                                         </span>
                                     </div>
+
                                 </div>
                                 <div class="email-subject">
                                     <?php echo htmlspecialchars($email['subject'] ?? 'No Subject'); ?>
@@ -529,6 +707,109 @@ error_log('Emails data: ' . print_r($emails, true));
                 openEmail(emailId);
             });
         });
+
+        const emailList = document.querySelector('.email-list');
+        const bulkActions = document.querySelector('.bulk-actions');
+        const selectedCount = document.querySelector('.selected-count');
+        let selectedEmails = new Set();
+
+        // Handle individual email selection
+        emailList.addEventListener('change', function(e) {
+            if (e.target.classList.contains('email-select')) {
+                const emailItem = e.target.closest('.email-item');
+                const emailId = emailItem.dataset.emailId;
+
+                if (e.target.checked) {
+                    selectedEmails.add(emailId);
+                    emailItem.classList.add('selected');
+                } else {
+                    selectedEmails.delete(emailId);
+                    emailItem.classList.remove('selected');
+                }
+
+                updateBulkActionsVisibility();
+            }
+        });
+
+        // Handle select all
+        document.querySelector('.select-all-btn').addEventListener('click', function() {
+            const checkboxes = document.querySelectorAll('.email-select');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = !allChecked;
+                const emailItem = checkbox.closest('.email-item');
+                const emailId = emailItem.dataset.emailId;
+
+                if (!allChecked) {
+                    selectedEmails.add(emailId);
+                    emailItem.classList.add('selected');
+                } else {
+                    selectedEmails.delete(emailId);
+                    emailItem.classList.remove('selected');
+                }
+            });
+
+            updateBulkActionsVisibility();
+        });
+
+        // Handle individual delete
+        emailList.addEventListener('click', function(e) {
+            if (e.target.closest('.delete-btn')) {
+                const emailItem = e.target.closest('.email-item');
+                const emailId = emailItem.dataset.emailId;
+
+                if (confirm('Move this email to trash?')) {
+                    deleteEmails([emailId]);
+                }
+            }
+        });
+
+        // Handle bulk delete
+        document.querySelector('.delete-selected').addEventListener('click', function() {
+            if (selectedEmails.size > 0 && confirm(`Move ${selectedEmails.size} email(s) to trash?`)) {
+                deleteEmails(Array.from(selectedEmails));
+            }
+        });
+
+        // Handle refresh
+        document.querySelector('.refresh-btn').addEventListener('click', function() {
+            location.reload();
+        });
+
+        function updateBulkActionsVisibility() {
+            bulkActions.style.display = selectedEmails.size > 0 ? 'flex' : 'none';
+            selectedCount.textContent = `${selectedEmails.size} selected`;
+        }
+
+        async function deleteEmails(emailIds) {
+            try {
+                const response = await fetch('../endpoints/delete_emails.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ emailIds })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    emailIds.forEach(id => {
+                        const emailItem = document.querySelector(`.email-item[data-email-id="${id}"]`);
+                        if (emailItem) {
+                            emailItem.remove();
+                            selectedEmails.delete(id);
+                        }
+                    });
+                    updateBulkActionsVisibility();
+                } else {
+                    throw new Error(data.error || 'Failed to delete emails');
+                }
+            } catch (error) {
+                alert('Error deleting emails: ' + error.message);
+            }
+        }
     });
 
     function openEmail(emailId) {
