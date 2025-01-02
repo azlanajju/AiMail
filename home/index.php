@@ -32,7 +32,7 @@ if (isset($_SESSION['calendar_events']) && isset($_SESSION['calendar_timestamp']
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AIINBOX - Home</title>
+    <title>Smart Compose - Home</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
     <link rel="stylesheet" href="./home.css">
@@ -42,6 +42,7 @@ if (isset($_SESSION['calendar_events']) && isset($_SESSION['calendar_timestamp']
     <?php $path="../"; include '../includes/topbar.php'; ?>
 
     <div class="container">
+
         <div class="main-content">
             <div class="two-column-layout">
                 <div class="column">
