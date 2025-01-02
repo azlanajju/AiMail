@@ -53,7 +53,7 @@ $emails = json_decode($response, true);
                 <div class="col-md-3">
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Categories</h5>
+                            <h5 class="mb-0">Classification</h5>
                             <button onclick="refreshClassifications()" class="btn btn-sm btn-outline-primary" id="refresh-btn">
                                 <i class="fas fa-sync-alt"></i> Refresh
                             </button>
