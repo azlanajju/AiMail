@@ -256,6 +256,101 @@ if (isset($_SESSION['calendar_events']) && isset($_SESSION['calendar_timestamp']
             timeZone: 'Asia/Kolkata'
         });
     }
+
+    function refreshSummary() {
+        const summaryContent = document.getElementById('summary-content');
+        const refreshBtn = document.getElementById('refresh-btn');
+        
+        if (refreshBtn) {
+            refreshBtn.disabled = true;
+            refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Refreshing...';
+        }
+
+        // Show loader
+        document.querySelector('.loader-container').style.display = 'block';
+        if (summaryContent) {
+            summaryContent.style.opacity = '0.6';
+        }
+
+        fetch('../endpoints/summarize_emails.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.summary) {
+                    // Update the summary content
+                    summaryContent.innerHTML = marked.parse(data.summary);
+                    
+                    // Update last updated time (IST)
+                    const date = new Date();
+                    const options = { 
+                        hour: 'numeric', 
+                        minute: '2-digit', 
+                        hour12: true,
+                        timeZone: 'Asia/Kolkata'
+                    };
+                    const timeString = date.toLocaleTimeString('en-US', options);
+                    
+                    const lastUpdated = document.querySelector('.last-updated');
+                    if (lastUpdated) {
+                        lastUpdated.textContent = `Last updated: ${timeString}`;
+                    } else {
+                        const newLastUpdated = document.createElement('div');
+                        newLastUpdated.className = 'last-updated';
+                        newLastUpdated.textContent = `Last updated: ${timeString}`;
+                        document.querySelector('.summary-section').insertBefore(
+                            newLastUpdated, 
+                            document.querySelector('.loader-container')
+                        );
+                    }
+
+                    // Show success message
+                    const successMessage = document.createElement('div');
+                    successMessage.className = 'alert alert-success';
+                    successMessage.innerHTML = '<i class="fas fa-check-circle"></i> Summary updated successfully';
+                    successMessage.style.position = 'fixed';
+                    successMessage.style.top = '20px';
+                    successMessage.style.right = '20px';
+                    successMessage.style.zIndex = '1000';
+                    document.body.appendChild(successMessage);
+
+                    // Remove success message after 3 seconds
+                    setTimeout(() => {
+                        successMessage.remove();
+                    }, 3000);
+                } else {
+                    throw new Error(data.error || 'No summary available');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                summaryContent.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i> 
+                        ${error.message}
+                    </div>`;
+            })
+            .finally(() => {
+                // Hide loader and reset button
+                document.querySelector('.loader-container').style.display = 'none';
+                if (summaryContent) {
+                    summaryContent.style.opacity = '1';
+                }
+                if (refreshBtn) {
+                    refreshBtn.disabled = false;
+                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+                }
+            });
+    }
+
+    // Add click event listener to refresh button
+    document.addEventListener('DOMContentLoaded', function() {
+        const refreshBtn = document.getElementById('refresh-btn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', refreshSummary);
+        }
+    });
+
+    // Optional: Auto-refresh every 15 minutes
+    // setInterval(refreshSummary, 15 * 60 * 1000);
     </script>
 
     <!-- Add marked.js for markdown parsing -->
