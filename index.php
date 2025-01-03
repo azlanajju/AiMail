@@ -156,7 +156,8 @@ if (isset($_GET['poll']) && isset($_SESSION['device_code'])) {
     <title>Smart Compose - Login</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="./images/favocon.png">
-!
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             margin: 0;
@@ -377,6 +378,125 @@ if (isset($_GET['poll']) && isset($_SESSION['device_code'])) {
 
         .copy-tooltip.show {
             opacity: 1;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .login-container {
+                width: 90%;
+                max-width: none;
+                padding: 1.5rem;
+                margin: 15px;
+            }
+
+            .logo img {
+                height: 80px;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .instructions {
+                font-size: 0.9rem;
+                margin: 1rem 0;
+            }
+
+            .code {
+                font-size: 1.5rem;
+                padding: 1rem;
+                letter-spacing: 3px;
+                margin: 1rem 0;
+            }
+
+            .link {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.9rem;
+                width: 100%;
+                margin-top: 1rem;
+            }
+
+            .status-message {
+                font-size: 0.8rem;
+                padding: 0.75rem;
+                margin-top: 1rem;
+            }
+
+            .copy-button {
+                padding: 6px;
+            }
+
+            .copy-button i {
+                font-size: 1rem;
+            }
+
+            .copy-tooltip {
+                font-size: 10px;
+                right: -2px;
+                top: -25px;
+            }
+
+            .wave {
+                height: 50px;
+            }
+        }
+
+        /* Additional styles for very small devices */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 1.25rem;
+                margin: 10px;
+            }
+
+            .logo img {
+                height: 60px;
+            }
+
+            h2 {
+                font-size: 1.3rem;
+            }
+
+            .code {
+                font-size: 1.2rem;
+                letter-spacing: 2px;
+            }
+
+            .link {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Landscape orientation adjustments */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .login-container {
+                margin: 10px auto;
+            }
+
+            .logo img {
+                height: 50px;
+            }
+
+            .wave {
+                display: none;
+            }
+        }
+
+        /* Ensure proper display on very small height screens */
+        @media (max-height: 600px) {
+            .login-container {
+                margin: 10px auto;
+                padding: 1rem;
+            }
+
+            .logo img {
+                height: 50px;
+            }
+
+            .wave {
+                height: 30px;
+            }
         }
     </style>
 </head>
