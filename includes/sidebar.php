@@ -1,4 +1,7 @@
-
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
 
 <div class="sidebar">
     <div class="logo">
@@ -179,32 +182,73 @@ color: #000;
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .sidebar {
-        width: 100vw;
-        bottom: 0;
-        top:auto;
+        width: 100%;
         height: 60px;
+        position: fixed;
+        bottom: 0;
+        top: auto;
+        left: 0;
         padding: 0;
         flex-direction: row;
+        z-index: 1000;
     }
 
-    .logo img{
-        height: 20px;
+    .logo {
+        display: none;
     }
 
-    .nav-menu{
+    .nav-menu {
         flex-direction: row;
-        gap: 0;
+        justify-content: space-around;
+        align-items: center;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        overflow-x: auto;
     }
 
-    .logout-btn {
-        gap: 8px;
-        margin-top: -12px;
+    .nav-item {
+        flex-direction: column;
+        padding: 8px;
+        gap: 4px;
+        font-size: 12px;
+        text-align: center;
+        min-width: fit-content;
     }
-    
-    .logo span,
-    .nav-item span,
-    .logout-btn span {
-        font-size: 14px;
+
+    .nav-item i {
+        font-size: 18px;
+    }
+
+    .nav-item span {
+        font-size: 10px;
+    }
+
+    .user-section {
+        display: none;
+    }
+
+    /* Adjust main content area */
+    .content-wrapper {
+        margin-left: 0 !important;
+        margin-bottom: 60px !important;
+        padding-bottom: 20px !important;
+    }
+}
+
+/* Add horizontal scrollbar styling for mobile */
+@media (max-width: 768px) {
+    .nav-menu::-webkit-scrollbar {
+        height: 3px;
+    }
+
+    .nav-menu::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    .nav-menu::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
     }
 }
 

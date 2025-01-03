@@ -14,6 +14,7 @@ body {
     margin-left: 250px;
     padding: 20px;
     min-height: 100vh;
+    margin-top: 60px;
 }
 
 .main-content {
@@ -145,4 +146,122 @@ body {
 .search-bar input:focus {
     outline: none;
     border-color: #1a73e8;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .container {
+        margin-left: 0;
+        padding: 15px;
+        padding-bottom: 80px; 
+        margin-top: 50px;
+        /* Space for bottom navigation */
+    }
+
+    .main-content {
+        padding: 10px;
+    }
+
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .search-bar input {
+        width: 100%;
+        max-width: none;
+    }
+
+    .draft-list {
+        margin-top: 15px;
+    }
+
+    .draft-item {
+        padding: 15px;
+    }
+
+    .draft-header {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+
+    .draft-to {
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .draft-date {
+        font-size: 12px;
+    }
+
+    .draft-subject {
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+
+    .draft-preview {
+        font-size: 13px;
+    }
+
+    .draft-actions {
+        margin-top: 10px;
+        justify-content: flex-end;
+    }
+
+    .edit-btn,
+    .delete-btn {
+        padding: 6px;
+    }
+
+    .error-message {
+        padding: 15px;
+        margin-bottom: 15px;
+        font-size: 14px;
+    }
+
+    .no-drafts {
+        padding: 30px 15px;
+        font-size: 14px;
+    }
+}
+
+/* Additional styles for very small devices */
+@media (max-width: 480px) {
+    .header {
+        padding: 12px;
+    }
+
+    .page-title {
+        font-size: 20px;
+    }
+
+    .search-bar input {
+        padding: 10px 15px;
+        font-size: 13px;
+    }
+
+    .draft-item {
+        padding: 12px;
+    }
+
+    .draft-actions {
+        gap: 10px;
+    }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+    .container {
+        margin-top: 10px;
+    }
+
+    .header {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: white;
+    }
 }

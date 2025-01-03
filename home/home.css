@@ -340,4 +340,131 @@ max-width: 100%;
     margin-top: -15px;
 }
 
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .container {
+        margin-left: 0 !important;
+        margin-top: 40px;
+        padding: 10px;
+        left: 0;
+    }
+
+    .two-column-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 0 10px;
+    }
+
+    .summary-section,
+    .today-events-section {
+        height: auto;
+        max-height: none;
+        margin-bottom: 20px;
+        padding: 20px;
+    }
+
+    .summary-header,
+    .section-header {
+        padding: 15px;
+        margin: -20px -20px 20px -20px;
+    }
+
+    .summary-header h2,
+    .section-header h2 {
+        font-size: 1.2em;
+    }
+
+    .refresh-button {
+        padding: 8px 15px;
+        font-size: 12px;
+    }
+
+    .event-card {
+        padding: 12px;
+    }
+
+    .event-time {
+        font-size: 0.9em;
+        min-width: auto;
+    }
+
+    .event-details h3 {
+        font-size: 1em;
+    }
+
+    .event-location,
+    .online-meeting {
+        font-size: 0.8em;
+    }
+
+    .markdown-body {
+        padding: 8px;
+    }
+
+    .loader-container {
+        padding: 20px;
+    }
+
+    .loader {
+        width: 30px;
+        height: 30px;
+    }
+
+    /* Adjust bottom padding to account for mobile navigation */
+    .container {
+        padding-bottom: 80px;
+    }
+
+    /* Improve touch targets */
+    .refresh-button,
+    .event-card {
+        min-height: 44px; /* Minimum touch target size */
+    }
+
+    /* Optimize scrolling */
+    .summary-section,
+    .today-events-section {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Adjust margins for mobile navigation */
+    .main-content {
+        margin-bottom: 60px;
+    }
+}
+
+/* Additional responsive breakpoint for very small devices */
+@media (max-width: 480px) {
+    .summary-header,
+    .section-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .event-card {
+        flex-direction: column;
+    }
+
+    .event-time {
+        margin-bottom: 5px;
+    }
+
+    .loader-text {
+        font-size: 12px;
+    }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+    .summary-section,
+    .today-events-section {
+        max-height: 70vh;
+    }
+
+    .container {
+        margin-top: 10px;
+    }
+}
+
 

@@ -414,7 +414,12 @@ $emails = json_decode($response, true);
             .then(data => {
                 if (data.error) throw new Error(data.error);
                 
+                // Store the raw classification data
                 currentClassifications = data.classifications;
+                
+                // Debug log to check data
+                console.log('Classifications received:', currentClassifications);
+                
                 updateUI(currentClassifications);
             })
             .catch(error => {
@@ -436,6 +441,9 @@ $emails = json_decode($response, true);
             </a>
         `;
         
+        // Debug log for categories
+        console.log('Updating categories:', classifications.mainCategories);
+        
         classifications.mainCategories.forEach(category => {
             mainCategoryList.innerHTML += `
                 <a href="#" class="list-group-item list-group-item-action" data-filter="category-${category.name}">
@@ -455,24 +463,47 @@ $emails = json_decode($response, true);
 
         // Update email list with classifications
         updateEmailList(classifications);
+
+        // Reattach event listeners
+        attachFilterListeners();
     }
 
     function updateEmailList(classifications) {
         const emailItems = document.querySelectorAll('.email-item');
+        
         emailItems.forEach(item => {
             const emailIndex = parseInt(item.dataset.index);
             
-            // Add priority indicator
-            let priority = Object.entries(classifications.priorityLevels)
-                .find(([_, data]) => data.emailIds.includes(emailIndex))?.[0];
-            
-            // Add category
-            let category = classifications.mainCategories
-                .find(cat => cat.emailIds.includes(emailIndex))?.name;
+            // Find priority and category for this email
+            let priority = null;
+            let category = null;
+
+            // Check priorities
+            Object.entries(classifications.priorityLevels).forEach(([level, data]) => {
+                if (data.emailIds.includes(emailIndex)) {
+                    priority = level;
+                }
+            });
+
+            // Check categories
+            classifications.mainCategories.forEach(cat => {
+                if (cat.emailIds.includes(emailIndex)) {
+                    category = cat.name;
+                }
+            });
+
+            // Store classifications as data attributes
+            item.dataset.emailPriority = priority || '';
+            item.dataset.emailCategory = category || '';
+
+            // Update the item's content
+            const originalContent = item.querySelector('.email-content') ? 
+                item.querySelector('.email-content').innerHTML : 
+                item.innerHTML;
 
             item.innerHTML = `
                 <div class="email-content">
-                    ${item.innerHTML}
+                    ${originalContent}
                 </div>
                 <div class="email-classifications">
                     ${priority ? `<span class="priority-badge ${priority}">${priority}</span>` : ''}
@@ -482,25 +513,34 @@ $emails = json_decode($response, true);
         });
     }
 
-    // Add filter functionality
-    document.querySelectorAll('#mainCategoryList a, #priorityList a').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Update active state
-            document.querySelectorAll('#mainCategoryList a, #priorityList a')
-                .forEach(l => l.classList.remove('active'));
-            this.classList.add('active');
+    function attachFilterListeners() {
+        document.querySelectorAll('#mainCategoryList a, #priorityList a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all links
+                document.querySelectorAll('#mainCategoryList a, #priorityList a')
+                    .forEach(l => l.classList.remove('active'));
+                
+                // Add active class to clicked link
+                this.classList.add('active');
 
-            const filter = this.dataset.filter;
-            filterEmails(filter);
+                const filter = this.dataset.filter;
+                filterEmails(filter);
+            });
         });
-    });
+    }
 
     function filterEmails(filter) {
-        if (!currentClassifications) return;
+        console.log('Filtering by:', filter); // Debug log
+
+        if (!currentClassifications) {
+            console.error('No classifications available');
+            return;
+        }
 
         const emailItems = document.querySelectorAll('.email-item');
+        
         emailItems.forEach(item => {
             const emailIndex = parseInt(item.dataset.index);
             
@@ -509,20 +549,29 @@ $emails = json_decode($response, true);
                 return;
             }
 
+            let shouldShow = false;
+
             if (filter.startsWith('category-')) {
                 const categoryName = filter.replace('category-', '');
                 const category = currentClassifications.mainCategories
                     .find(cat => cat.name === categoryName);
-                item.style.display = category?.emailIds.includes(emailIndex) ? 'block' : 'none';
+                
+                shouldShow = category && category.emailIds.includes(emailIndex);
+                console.log(`Email ${emailIndex} category check:`, categoryName, shouldShow); // Debug log
             } else {
                 const priority = currentClassifications.priorityLevels[filter];
-                item.style.display = priority?.emailIds.includes(emailIndex) ? 'block' : 'none';
+                shouldShow = priority && priority.emailIds.includes(emailIndex);
+                console.log(`Email ${emailIndex} priority check:`, filter, shouldShow); // Debug log
             }
+
+            item.style.display = shouldShow ? 'block' : 'none';
         });
     }
 
-    // Initial load
-    refreshClassifications();
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        refreshClassifications();
+    });
     </script>
 
 </body>

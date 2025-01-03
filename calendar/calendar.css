@@ -142,3 +142,143 @@ body {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+@media (max-width: 768px) {
+    .container {
+        margin-left: 0;
+        padding: 10px;
+        margin-top: 0;
+        padding-bottom: 80px;
+    }
+
+    .main-content {
+        padding: 10px;
+    }
+
+    .calendar-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 0 10px;
+    }
+
+    .calendar-header h2 {
+        font-size: 1.5em;
+    }
+
+    .view-controls {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 5px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .view-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .date-group {
+        margin-bottom: 15px;
+        border-radius: 8px;
+    }
+
+    .date-header {
+        padding: 12px 15px;
+        font-size: 14px;
+    }
+
+    .events-list {
+        padding: 15px;
+    }
+
+    .event-card {
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .event-time {
+        min-width: auto;
+        font-size: 14px;
+    }
+
+    .event-details h3 {
+        font-size: 15px;
+        margin-bottom: 8px;
+    }
+
+    .event-location, 
+    .online-meeting {
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+
+    .event-preview {
+        font-size: 13px;
+        margin-top: 8px;
+    }
+
+    .loader-container {
+        padding: 30px;
+    }
+
+    .no-events {
+        padding: 30px 15px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .calendar-header h2 {
+        font-size: 1.3em;
+    }
+
+    .view-btn {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+
+    .event-card {
+        padding: 10px;
+    }
+
+    .event-details h3 {
+        font-size: 14px;
+    }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+    .container {
+        margin-top: 10px;
+    }
+
+    .calendar-header {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: #f5f7ff;
+        padding: 10px;
+        margin: -10px -10px 15px -10px;
+    }
+
+    .events-list {
+        max-height: calc(100vh - 180px);
+        overflow-y: auto;
+    }
+}
+
+.view-controls::-webkit-scrollbar {
+    height: 3px;
+}
+
+.view-controls::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.view-controls::-webkit-scrollbar-thumb {
+    background: #5e64ff;
+    border-radius: 3px;
+}

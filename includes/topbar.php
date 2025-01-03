@@ -1,3 +1,13 @@
+<?php
+// Add this at the top to ensure we have access to the session
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Debug output (remove in production)
+error_log('Session data: ' . print_r($_SESSION, true));
+?>
+
 <head> 
 <link rel="icon" type="image/x-icon" href="<?php echo $path?>images/image.ico">
 
@@ -22,10 +32,28 @@
         </div>
         
         <div class="user-profile">
-            <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($_SESSION['user_name'] ?? 'User'); ?>&background=5e64ff&color=fff" 
+            <?php
+            // Initialize display name
+            $displayName = 'Smart Compose';  // Default fallback
+            
+            // Check Microsoft Graph data first
+            if (isset($_SESSION['user_info']) && !empty($_SESSION['user_info'])) {
+                if (isset($_SESSION['user_info']['displayName'])) {
+                    $displayName = $_SESSION['user_info']['displayName'];
+                } elseif (isset($_SESSION['user_info']['mail'])) {
+                    $displayName = $_SESSION['user_info']['mail'];
+                }
+            }
+            // Fallback to basic session user name
+            elseif (isset($_SESSION['user_name']) && !empty($_SESSION['user_name'])) {
+                $displayName = $_SESSION['user_name'];
+            }
+            ?>
+            
+            <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($displayName); ?>&background=5e64ff&color=fff" 
                  alt="Profile" 
                  class="profile-image">
-            <span class="user-name"><?php echo $_SESSION['user_name'] ?? 'User'; ?></span>
+            <span class="user-name"><?php echo htmlspecialchars($displayName); ?></span>
             <i class="fas fa-chevron-down"></i>
             
             <div class="profile-dropdown">
@@ -45,6 +73,17 @@
 </div>
 
 <style>
+    @media (max-width: 768px) {
+        .topbar {
+            left: 0 !important;
+            width: 100vw;
+        }
+
+
+        .search-container {
+display: none;
+}
+    }
 .topbar {
     position: fixed;
     top: 0;
@@ -207,6 +246,7 @@
     .topbar {
         left: 200px; /* Match collapsed sidebar width */
         padding: 0 15px;
+        padding-right: 20px !important;
     }
 
     .search-container {
@@ -216,6 +256,10 @@
     .user-name {
         display: none;
     }
+    .fixed-compose-btn {
+    bottom: 65px !important;
+    }
+    
 }
 </style>
 

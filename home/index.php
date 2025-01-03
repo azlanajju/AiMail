@@ -37,7 +37,8 @@ if (isset($_SESSION['calendar_events']) && isset($_SESSION['calendar_timestamp']
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
     <link rel="stylesheet" href="./home.css">
     <link rel="icon" type="image/x-icon" href="../images/favocon.png">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
     <?php $activePage="home"; $path="../"; include '../includes/sidebar.php'; ?>

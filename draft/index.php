@@ -85,15 +85,7 @@ $drafts = $emailViewer->fetchDraftEmails();
     
     <div class="container">
         <div class="main-content">
-            <div class="header">
-                <div class="search-bar">
-                    <input type="text" placeholder="Search in drafts">
-                </div>
-                <div class="user-profile">
-                    <i class="fas fa-cog"></i>
-                    <i class="fas fa-user-circle"></i>
-                </div>
-            </div>
+            <?php include '../includes/topbar.php'; ?>
 
             <h1 class="page-title">
                 <i class="fas fa-file-alt"></i> Drafts
