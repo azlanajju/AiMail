@@ -179,7 +179,26 @@ color: #000;
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .sidebar {
-        width: 200px;
+        width: 100vw;
+        bottom: 0;
+        top:auto;
+        height: 60px;
+        padding: 0;
+        flex-direction: row;
+    }
+
+    .logo img{
+        height: 20px;
+    }
+
+    .nav-menu{
+        flex-direction: row;
+        gap: 0;
+    }
+
+    .logout-btn {
+        gap: 8px;
+        margin-top: -12px;
     }
     
     .logo span,

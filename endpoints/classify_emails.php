@@ -18,37 +18,63 @@ function classifyEmails($emails) {
             'preview' => substr($email['bodyPreview'] ?? '', 0, 200),
             'from' => $email['from']['emailAddress']['address'] ?? 'unknown'
         ];
-    }, array_slice($emails['value'], 0, 30)); // Limit to 30 emails
+    }, array_slice($emails['value'], 0, 30));
 
     $prompt = <<<EOT
-Analyze these emails and create exactly 5 categories. Follow these rules strictly:
+Analyze these emails and provide TWO SEPARATE classifications:
 
-1. Create these specific categories:
-based on different projects and tasks also mention the project name and task name
+1. Main Categories (Topic-based):
+Create exactly 5 main categories based on email content:
+- Project Updates
+- Client Communications
+- Internal Memos
+- Technical Discussions
+- General Admin
 
-2. Format the response as valid JSON like this:
+2. Priority Levels:
+Classify each email into one of these priorities:
+- Urgent (Immediate action needed)
+- High (Important but not immediate)
+- Medium (Regular priority)
+- Low (Non-urgent/FYI)
+
+Required JSON format:
 {
-    "categories": [
+    "mainCategories": [
         {
-            "name": "Example category",
-            "description": "Emails related to example category",
+            "name": "Category Name",
+            "description": "Brief description",
             "emailIds": [0, 1, 2]
         }
-    ]
+    ],
+    "priorityLevels": {
+        "urgent": {
+            "description": "Needs immediate attention",
+            "emailIds": [0, 1]
+        },
+        "high": {
+            "description": "Important tasks",
+            "emailIds": [2, 3]
+        },
+        "medium": {
+            "description": "Regular tasks",
+            "emailIds": [4, 5]
+        },
+        "low": {
+            "description": "Non-urgent items",
+            "emailIds": [6, 7]
+        }
+    }
 }
 
-3. Each email must be assigned to exactly one category
-4. Use emailIds array to indicate which emails belong to each category
-5. Provide a brief description for each category
-
-Analyze these emails and categorize them accordingly.
+Note: Each email MUST be classified in both systems.
 EOT;
 
     $postData = [
         'contents' => [
             [
                 'parts' => [
-                    ['text' => $prompt . "\n\nEmails:\n" . json_encode($emailData, JSON_PRETTY_PRINT)]
+                    ['text' => $prompt . "\n\nEmails to classify:\n" . json_encode($emailData, JSON_PRETTY_PRINT)]
                 ]
             ]
         ],

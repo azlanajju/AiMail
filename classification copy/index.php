@@ -49,52 +49,21 @@ $emails = json_decode($response, true);
 
         <div class="container mt-4">
             <div class="row">
-                <!-- Left Sidebar -->
+                <!-- Categories Sidebar -->
                 <div class="col-md-3">
-                    <!-- Main Categories -->
-                    <div class="card mb-4">
+                    <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Categories</h5>
+                            <h5 class="mb-0">Classification</h5>
                             <button onclick="refreshClassifications()" class="btn btn-sm btn-outline-primary" id="refresh-btn">
-                                <i class="fas fa-sync-alt"></i>
+                                <i class="fas fa-sync-alt"></i> Refresh
                             </button>
                         </div>
                         <div class="card-body">
-                            <div class="list-group" id="mainCategoryList">
-                                <a href="#" class="list-group-item list-group-item-action active" data-filter="all">
+                            <div class="list-group" id="categoryList">
+                                <a href="#" class="list-group-item list-group-item-action active" data-category="all">
                                     All Emails
                                 </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Priority Levels -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">Priority Levels</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="list-group" id="priorityList">
-                                <a href="#" class="list-group-item list-group-item-action" data-filter="urgent">
-                                    <span class="priority-dot urgent"></span>
-                                    Urgent
-                                    <span class="badge bg-danger rounded-pill">0</span>
-                                </a>
-                                <a href="#" class="list-group-item list-group-item-action" data-filter="high">
-                                    <span class="priority-dot high"></span>
-                                    High
-                                    <span class="badge bg-warning rounded-pill">0</span>
-                                </a>
-                                <a href="#" class="list-group-item list-group-item-action" data-filter="medium">
-                                    <span class="priority-dot medium"></span>
-                                    Medium
-                                    <span class="badge bg-info rounded-pill">0</span>
-                                </a>
-                                <a href="#" class="list-group-item list-group-item-action" data-filter="low">
-                                    <span class="priority-dot low"></span>
-                                    Low
-                                    <span class="badge bg-secondary rounded-pill">0</span>
-                                </a>
+                                <!-- Categories will be loaded here -->
                             </div>
                         </div>
                     </div>
@@ -402,127 +371,76 @@ $emails = json_decode($response, true);
         });
     });
 
-    let currentClassifications = null;
-
     function refreshClassifications() {
         const refreshBtn = document.getElementById('refresh-btn');
+        const categoryList = document.getElementById('categoryList');
+        
+        // Show loading state
         refreshBtn.disabled = true;
-        refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
+        refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+        
         fetch('../endpoints/classify_emails.php')
             .then(response => response.json())
             .then(data => {
-                if (data.error) throw new Error(data.error);
-                
-                currentClassifications = data.classifications;
-                updateUI(currentClassifications);
+                if (data.status === 'success' && data.classifications && data.classifications.categories) {
+                    // Update category list
+                    categoryList.innerHTML = `
+                        <a href="#" class="list-group-item list-group-item-action active" data-category="all">
+                            All Emails (${data.email_count})
+                        </a>
+                    `;
+                    
+                    data.classifications.categories.forEach(category => {
+                        categoryList.innerHTML += `
+                            <a href="#" class="list-group-item list-group-item-action" data-category="${category.name}">
+                                ${category.name}
+                                <span class="badge bg-primary rounded-pill">${category.emailIds.length}</span>
+                            </a>
+                        `;
+                    });
+                    
+                    // Attach click handlers
+                    attachCategoryListeners(data.classifications);
+                } else {
+                    throw new Error(data.message || 'Failed to load classifications');
+                }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Classification failed: ' + error.message);
+                alert('Error: ' + error.message);
             })
             .finally(() => {
                 refreshBtn.disabled = false;
-                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
             });
     }
 
-    function updateUI(classifications) {
-        // Update main categories
-        const mainCategoryList = document.getElementById('mainCategoryList');
-        mainCategoryList.innerHTML = `
-            <a href="#" class="list-group-item list-group-item-action active" data-filter="all">
-                All Emails
-            </a>
-        `;
-        
-        classifications.mainCategories.forEach(category => {
-            mainCategoryList.innerHTML += `
-                <a href="#" class="list-group-item list-group-item-action" data-filter="category-${category.name}">
-                    ${category.name}
-                    <span class="badge bg-primary rounded-pill">${category.emailIds.length}</span>
-                </a>
-            `;
-        });
-
-        // Update priority counts
-        Object.entries(classifications.priorityLevels).forEach(([priority, data]) => {
-            const badge = document.querySelector(`[data-filter="${priority}"] .badge`);
-            if (badge) {
-                badge.textContent = data.emailIds.length;
-            }
-        });
-
-        // Update email list with classifications
-        updateEmailList(classifications);
-    }
-
-    function updateEmailList(classifications) {
+    function attachCategoryListeners(classifications) {
         const emailItems = document.querySelectorAll('.email-item');
-        emailItems.forEach(item => {
-            const emailIndex = parseInt(item.dataset.index);
-            
-            // Add priority indicator
-            let priority = Object.entries(classifications.priorityLevels)
-                .find(([_, data]) => data.emailIds.includes(emailIndex))?.[0];
-            
-            // Add category
-            let category = classifications.mainCategories
-                .find(cat => cat.emailIds.includes(emailIndex))?.name;
+        const categoryLinks = document.querySelectorAll('#categoryList a');
 
-            item.innerHTML = `
-                <div class="email-content">
-                    ${item.innerHTML}
-                </div>
-                <div class="email-classifications">
-                    ${priority ? `<span class="priority-badge ${priority}">${priority}</span>` : ''}
-                    ${category ? `<span class="category-badge">${category}</span>` : ''}
-                </div>
-            `;
+        categoryLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                categoryLinks.forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+
+                const category = this.dataset.category;
+                
+                emailItems.forEach(item => {
+                    const emailIndex = parseInt(item.dataset.index);
+                    
+                    if (category === 'all') {
+                        item.style.display = 'block';
+                    } else {
+                        const categoryData = classifications.categories.find(c => c.name === category);
+                        item.style.display = categoryData && categoryData.emailIds.includes(emailIndex) ? 'block' : 'none';
+                    }
+                });
+            });
         });
     }
-
-    // Add filter functionality
-    document.querySelectorAll('#mainCategoryList a, #priorityList a').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Update active state
-            document.querySelectorAll('#mainCategoryList a, #priorityList a')
-                .forEach(l => l.classList.remove('active'));
-            this.classList.add('active');
-
-            const filter = this.dataset.filter;
-            filterEmails(filter);
-        });
-    });
-
-    function filterEmails(filter) {
-        if (!currentClassifications) return;
-
-        const emailItems = document.querySelectorAll('.email-item');
-        emailItems.forEach(item => {
-            const emailIndex = parseInt(item.dataset.index);
-            
-            if (filter === 'all') {
-                item.style.display = 'block';
-                return;
-            }
-
-            if (filter.startsWith('category-')) {
-                const categoryName = filter.replace('category-', '');
-                const category = currentClassifications.mainCategories
-                    .find(cat => cat.name === categoryName);
-                item.style.display = category?.emailIds.includes(emailIndex) ? 'block' : 'none';
-            } else {
-                const priority = currentClassifications.priorityLevels[filter];
-                item.style.display = priority?.emailIds.includes(emailIndex) ? 'block' : 'none';
-            }
-        });
-    }
-
-    // Initial load
-    refreshClassifications();
     </script>
 
 </body>
